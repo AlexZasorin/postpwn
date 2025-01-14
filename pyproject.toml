@@ -1,0 +1,20 @@
+[project]
+name = "that-what-must-be-done"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Alex Zasorin", email = "zasorin.alek@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "python-dotenv>=1.0.1",
+    "todoist-api-python>=2.1.7",
+]
+
+[project.scripts]
+that-what-must-be-done = "that_what_must_be_done:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
