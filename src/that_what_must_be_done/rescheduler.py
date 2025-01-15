@@ -3,6 +3,14 @@ from todoist_api_python.api_async import TodoistAPIAsync
 from todoist_api_python.models import Task
 from collections import defaultdict
 
+max_weight = 10
+rules = [
+    {"filter": "@< 15 min", "limit": 4, "weight": 2},
+    {"filter": "@< 60 min", "weight": 4},
+    {"filter": "@< 3 hrs", "weight": 8},
+    {"filter": "@> 3 hrs", "weight": 10},
+]
+
 
 async def reschedule(config: dict[str, str]) -> None:
     api = TodoistAPIAsync(config["TODOIST_DEV_USER_TOKEN"])
