@@ -10,6 +10,8 @@ from that_what_must_be_done.weighted_task import WeightedTask
 
 # TODO: Allow a maximum_weight for each day
 
+# TODO: Somehow consider nonrecurring p1 tasks in scheduling calculation?
+
 
 # TODO: Add value property to WeightedTask and increase value for older tasks
 # Perhaps, take the difference between the current date and the oldest task, and normalize that
@@ -110,7 +112,7 @@ async def reschedule(
 
         curr_date += timedelta(days=1)
 
-    # We need to keep track of tasks so they don't get garbage collected? lol
+    # We need to keep track of (async)tasks so they don't get garbage collected? lol
     coroutines: set[AsyncTask[bool]] = set()
     for date_str, weighted_tasks in new_schedule.items():
         for task in weighted_tasks:

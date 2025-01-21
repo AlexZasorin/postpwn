@@ -35,7 +35,7 @@ def main() -> None:
     asyncio.run(
         reschedule(
             api=api,
-            filter="!assigned to:others & !no date & recurring & no deadline & !p1",
+            filter="!assigned to:others & !no date & (today | overdue) & recurring & no deadline & !p1",
             max_weight=max_weight,
         )
     )
