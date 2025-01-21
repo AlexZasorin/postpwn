@@ -5,3 +5,6 @@ set shell := ["zsh", "-cu"]
 
 @run:
   uv run that-what-must-be-done
+
+@lint:
+  uv run ruff check

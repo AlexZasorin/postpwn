@@ -18,3 +18,8 @@ that-what-must-be-done = "that_what_must_be_done:main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.9.2",
+]
