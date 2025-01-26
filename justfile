@@ -1,5 +1,3 @@
-set shell := ["zsh", "-cu"]
-
 @setup-dotenv:
   sh scripts/setup-dotenv.sh
 
