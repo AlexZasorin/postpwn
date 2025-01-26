@@ -10,7 +10,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     labels:
       ofelia.enabled: "true"
-      ofelia.job-run.datecron.schedule: "0 */1 * * * *"
+      ofelia.job-run.datecron.schedule: "5 0 0 * * *"
       ofelia.job-run.datecron.container: "rescheduler"
     networks:
       - default
