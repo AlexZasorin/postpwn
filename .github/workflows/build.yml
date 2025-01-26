@@ -70,15 +70,16 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository }}:latest
+          images: ghcr.io/AlexZasorin/that-what-must-be-done/app
+          flavor: latest=true
           tags: |
+            type=sha,suffix=-{{date 'YYYYMMDDHHmmss'}}
             type=sha
-            latest
 
       - name: Setup Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push
+      - name: Build and Push
         uses: docker/build-push-action@v6
         with:
           context: .
