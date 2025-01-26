@@ -9,6 +9,7 @@ concurrency:
 
 jobs:
   test:
+    name: Test
     runs-on: ubuntu-latest
     steps:
       - name: Install Just
@@ -37,6 +38,7 @@ jobs:
       # - name: Run tests
 
   build:
+    name: Build
     runs-on: ubuntu-latest
     permissions:
       packages: write
