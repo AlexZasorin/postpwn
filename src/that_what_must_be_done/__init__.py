@@ -1,6 +1,7 @@
 import asyncio
+import os
 
-from dotenv import dotenv_values, load_dotenv
+from dotenv import load_dotenv
 from todoist_api_python.api_async import TodoistAPIAsync
 
 from that_what_must_be_done.rescheduler import reschedule
@@ -18,7 +19,7 @@ rules: list[Rule] = [
 
 
 def main() -> None:
-    config = dotenv_values()
+    config = {"TODOIST_DEV_USER_TOKEN": os.getenv("TODOIST_DEV_USER_TOKEN")}
     config = {key: value for key, value in config.items() if value is not None}
 
     api = TodoistAPIAsync(config["TODOIST_DEV_USER_TOKEN"])
