@@ -11,6 +11,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - name: Install Just
+        uses: extractions/setup-just@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+
       - name: Checkout repo
         uses: actions/checkout@v4
 
@@ -37,6 +42,11 @@ jobs:
       packages: write
     needs: [test]
     steps:
+      - name: Install Just
+        uses: extractions/setup-just@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+
       - name: Checkout repo
         uses: actions/checkout@v4
 
@@ -52,7 +62,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.PAT_TOKEN }}
 
       - name: Generate metadata
         id: meta
