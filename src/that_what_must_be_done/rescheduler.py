@@ -1,23 +1,14 @@
 from asyncio import Task as AsyncTask, create_task
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from todoist_api_python.api_async import TodoistAPIAsync
 from todoist_api_python.models import Due, Task
 
-from that_what_must_be_done.types import Rule, UpdateTaskParams
+from that_what_must_be_done.types import Rule, UpdateTaskParams, WeightConfig
 from that_what_must_be_done.weighted_task import WeightedTask
 
-# TODO: Allow a maximum_weight for each day
 
-# TODO: Somehow consider nonrecurring p1 tasks in scheduling calculation?
-
-
-# TODO: Add value property to WeightedTask and increase value for older tasks
-# Perhaps, take the difference between the current date and the oldest task, and normalize that
-# to a value between 0 and 1, then add that to the weight of the task. This way, older tasks
-# are prioritized over newer tasks, but will not be prioritized over tasks with higher priority.
-# TODO: Add a limit to the rules, so that only a certain number of tasks can be scheduled per day
 def weighted_adapter(task: Task, rules: list[Rule] | None) -> WeightedTask | None:
     if rules is None:
         return WeightedTask(task, 0)
@@ -40,7 +31,6 @@ def weighted_adapter(task: Task, rules: list[Rule] | None) -> WeightedTask | Non
     return WeightedTask(task, weight)
 
 
-# TODO: Handle scheduling tasks with a limit set
 def fill_my_sack(
     max_weight: int,
     tasks: list[WeightedTask],
@@ -80,10 +70,33 @@ def get_update_params(date_str: str, due: Due) -> UpdateTaskParams:
     return update_params
 
 
+def get_weekday_weight(weight_config: WeightConfig | int, date: date) -> int:
+    if isinstance(weight_config, int):
+        return weight_config
+
+    match date.weekday():
+        case 0:
+            return weight_config.monday
+        case 1:
+            return weight_config.tuesday
+        case 2:
+            return weight_config.wednesday
+        case 3:
+            return weight_config.thursday
+        case 4:
+            return weight_config.friday
+        case 5:
+            return weight_config.saturday
+        case 6:
+            return weight_config.sunday
+        case _:
+            return 0
+
+
 async def reschedule(
     api: TodoistAPIAsync,
     filter: str,
-    max_weight: int,
+    max_weight: WeightConfig | int,
     rules: list[Rule] | None = None,
 ) -> None:
     try:
@@ -105,7 +118,8 @@ async def reschedule(
     new_schedule: dict[str, list[WeightedTask]] = defaultdict(list)
     curr_date = datetime.now().date()
     while len(weighted_tasks) != 0:
-        next_batch = fill_my_sack(max_weight, weighted_tasks)
+        weight = get_weekday_weight(max_weight, curr_date)
+        next_batch = fill_my_sack(weight, weighted_tasks)
 
         new_schedule[str(curr_date)].extend(next_batch)
         weighted_tasks = [task for task in weighted_tasks if task not in next_batch]

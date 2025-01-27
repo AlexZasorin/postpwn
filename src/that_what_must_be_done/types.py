@@ -1,4 +1,5 @@
-from typing import NotRequired, Required, TypedDict
+from pydantic import BaseModel
+from typing import Required, TypedDict
 
 
 class Rule(TypedDict, total=False):
@@ -7,15 +8,30 @@ class Rule(TypedDict, total=False):
     weight: int
 
 
-class UpdateTaskParams(TypedDict):
-    content: NotRequired[str]
-    description: NotRequired[str]
-    labels: NotRequired[list[str]]
-    priority: NotRequired[int]
-    due_string: NotRequired[str]
-    due_date: NotRequired[str]
-    due_datetime: NotRequired[str]
-    due_lang: NotRequired[str]
-    assignee_id: NotRequired[str]
-    duration: NotRequired[int]
-    duration_unit: NotRequired[str]
+class WeightConfig(BaseModel):
+    sunday: int
+    monday: int
+    tuesday: int
+    wednesday: int
+    thursday: int
+    friday: int
+    saturday: int
+
+
+class ScheduleConfig(BaseModel):
+    max_weight: WeightConfig | int
+    rules: list[Rule]
+
+
+class UpdateTaskParams(TypedDict, total=False):
+    content: str
+    description: str
+    labels: list[str]
+    priority: int
+    due_string: str
+    due_date: str
+    due_datetime: str
+    due_lang: str
+    assignee_id: str
+    duration: int
+    duration_unit: str

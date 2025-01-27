@@ -5,17 +5,9 @@ from dotenv import load_dotenv
 from todoist_api_python.api_async import TodoistAPIAsync
 
 from that_what_must_be_done.rescheduler import reschedule
-from that_what_must_be_done.types import Rule
+from that_what_must_be_done.types import ScheduleConfig
 
 config = load_dotenv()
-
-max_weight = 10
-rules: list[Rule] = [
-    {"filter": "@< 15 min", "limit": 4, "weight": 2},
-    {"filter": "@< 60 min", "weight": 4},
-    {"filter": "@< 3 hrs", "weight": 8},
-    {"filter": "@> 3 hrs", "weight": 10},
-]
 
 
 def main() -> None:
@@ -23,6 +15,16 @@ def main() -> None:
     config = {key: value for key, value in config.items() if value is not None}
 
     api = TodoistAPIAsync(config["TODOIST_DEV_USER_TOKEN"])
+
+    config_path = f"{os.path.expanduser('~')}/.config/rescheduler/rules.json"
+    if os.path.exists(config_path):
+        with open(config_path) as f:
+            schedule_config = ScheduleConfig.model_validate_json(f.read())
+            max_weight = schedule_config.max_weight
+            rules = schedule_config.rules
+    else:
+        max_weight = 10
+        rules = []
 
     asyncio.run(
         reschedule(
