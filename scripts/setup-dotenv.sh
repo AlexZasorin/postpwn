@@ -6,6 +6,7 @@
 TODOIST_CLIENTID=""
 TODOIST_API_KEY=""
 TODOIST_DEV_USER_TOKEN=""
+CONFIG_PATH=~/Repos/that-what-must-be-done/rules.json
 
 # direnv
 ####################################
@@ -30,6 +31,7 @@ cat <<EOF > .env
 TODOIST_CLIENTID=$TODOIST_CLIENTID
 TODOIST_API_KEY=$TODOIST_TOKEN
 TODOIST_DEV_USER_TOKEN=$TODOIST_DEV_USER_TOKEN
+CONFIG_PATH=$CONFIG_PATH
 
 EOF
 

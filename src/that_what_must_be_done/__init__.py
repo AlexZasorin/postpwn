@@ -11,12 +11,15 @@ config = load_dotenv()
 
 
 def main() -> None:
-    config = {"TODOIST_DEV_USER_TOKEN": os.getenv("TODOIST_DEV_USER_TOKEN")}
+    config = {
+        "TODOIST_DEV_USER_TOKEN": os.getenv("TODOIST_DEV_USER_TOKEN"),
+        "CONFIG_PATH": os.getenv("CONFIG_PATH"),
+    }
     config = {key: value for key, value in config.items() if value is not None}
 
     api = TodoistAPIAsync(config["TODOIST_DEV_USER_TOKEN"])
 
-    config_path = f"{os.path.expanduser('~')}/.config/rescheduler/rules.json"
+    config_path = f"{config['CONFIG_PATH']}"
     if os.path.exists(config_path):
         with open(config_path) as f:
             schedule_config = ScheduleConfig.model_validate_json(f.read())
@@ -25,6 +28,8 @@ def main() -> None:
     else:
         max_weight = 10
         rules = []
+
+    print(rules)
 
     asyncio.run(
         reschedule(
