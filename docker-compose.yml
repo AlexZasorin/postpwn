@@ -22,7 +22,7 @@ services:
     volumes:
       - ${CONFIG_PATH}:/app/rules.json
     environment:
-      - CONFIG_PATH=${CONFIG_PATH}
+      - CONFIG_PATH=/app/rules.json
     networks:
       - default
 
