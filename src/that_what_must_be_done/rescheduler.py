@@ -8,6 +8,8 @@ from todoist_api_python.models import Due, Task
 from that_what_must_be_done.types import Rule, UpdateTaskParams, WeightConfig
 from that_what_must_be_done.weighted_task import WeightedTask
 
+from tenacity import retry, wait_exponential
+
 
 def weighted_adapter(task: Task, rules: list[Rule] | None) -> WeightedTask | None:
     if rules is None:
@@ -93,6 +95,7 @@ def get_weekday_weight(weight_config: WeightConfig | int, date: date) -> int:
             return 0
 
 
+@retry(wait=wait_exponential(multiplier=1, min=4, max=120))
 async def reschedule(
     api: TodoistAPIAsync,
     filter: str,
