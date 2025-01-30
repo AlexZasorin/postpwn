@@ -1,6 +1,6 @@
 from asyncio import Task as AsyncTask, create_task
 from collections import defaultdict
-from datetime import date, datetime, timedelta, timezone, tzinfo
+from datetime import date, datetime, timedelta
 
 from todoist_api_python.api_async import TodoistAPIAsync
 from todoist_api_python.models import Due, Task
@@ -120,6 +120,7 @@ async def reschedule(
     )
 
     new_schedule: dict[str, list[WeightedTask]] = defaultdict(list)
+    # TODO: Make the timezone configurable
     curr_date = datetime.now(tz=timezone("US/Pacific")).date()
     while len(weighted_tasks) != 0:
         weight = get_weekday_weight(max_weight, curr_date)
