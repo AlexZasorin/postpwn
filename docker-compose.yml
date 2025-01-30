@@ -12,6 +12,7 @@ services:
       ofelia.enabled: "true"
       ofelia.job-run.datecron.schedule: "5 0 8 * * *"
       ofelia.job-run.datecron.container: "rescheduler"
+      ofelia.job-run.datecron.delete: "true"
     networks:
       - default
   rescheduler:
