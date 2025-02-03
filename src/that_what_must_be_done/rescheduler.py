@@ -103,6 +103,7 @@ async def reschedule(
     time_zone: str,
     max_weight: WeightConfig | int,
     rules: list[Rule] | None = None,
+    dry_run: bool = False,
 ) -> None:
     try:
         tasks = await api.get_tasks(filter=filter)  # pyright: ignore[reportUnknownMemberType]
@@ -136,14 +137,13 @@ async def reschedule(
     for date_str, weighted_tasks in new_schedule.items():
         for task in weighted_tasks:
             if task.due and task.due.date != date_str:
-                print(f"Rescheduling task from {task.due.date} to {date_str}")
+                print(f"Rescheduling {task.content} from {task.due.date} to {date_str}")
 
                 update_params = get_update_params(date_str, task.due)
 
-                result = create_task(api.update_task(task.id, **update_params))  # pyright: ignore[reportUnknownMemberType]
-                coroutines.add(result)
-
-                print(task.content)
+                if not dry_run:
+                    result = create_task(api.update_task(task.id, **update_params))  # pyright: ignore[reportUnknownMemberType]
+                    coroutines.add(result)
 
     # Wait to finish so that the program doesn't exit early
     for coroutine in coroutines:
