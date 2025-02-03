@@ -9,7 +9,7 @@ from that_what_must_be_done.types import Rule, UpdateTaskParams, WeightConfig
 from that_what_must_be_done.weighted_task import WeightedTask
 
 from tenacity import retry, wait_exponential
-from pytz import timezone
+from zoneinfo import ZoneInfo
 
 
 def weighted_adapter(task: Task, rules: list[Rule] | None) -> WeightedTask | None:
@@ -121,7 +121,7 @@ async def reschedule(
 
     new_schedule: dict[str, list[WeightedTask]] = defaultdict(list)
     # TODO: Make the timezone configurable
-    curr_date = datetime.now(tz=timezone("US/Pacific")).date()
+    curr_date = datetime.now(tz=ZoneInfo("US/Pacific")).date()
     while len(weighted_tasks) != 0:
         weight = get_weekday_weight(max_weight, curr_date)
         next_batch = fill_my_sack(weight, weighted_tasks)
