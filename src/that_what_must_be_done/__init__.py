@@ -37,6 +37,7 @@ def main() -> None:
             filter="!assigned to:others & !no date & !recurring & no deadline & !p1",
             max_weight=max_weight,
             rules=rules,
+            time_zone="US/Pacific",
         )
     )
 
@@ -45,5 +46,6 @@ def main() -> None:
             api=api,
             filter="!assigned to:others & !no date & overdue & recurring & no deadline & !p1",
             max_weight=max_weight,
+            time_zone="US/Pacific",
         )
     )

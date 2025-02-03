@@ -100,6 +100,7 @@ def get_weekday_weight(weight_config: WeightConfig | int, date: date) -> int:
 async def reschedule(
     api: TodoistAPIAsync,
     filter: str,
+    time_zone: str,
     max_weight: WeightConfig | int,
     rules: list[Rule] | None = None,
 ) -> None:
@@ -120,8 +121,7 @@ async def reschedule(
     )
 
     new_schedule: dict[str, list[WeightedTask]] = defaultdict(list)
-    # TODO: Make the timezone configurable
-    curr_date = datetime.now(tz=ZoneInfo("US/Pacific")).date()
+    curr_date = datetime.now(tz=ZoneInfo(time_zone)).date()
     while len(weighted_tasks) != 0:
         weight = get_weekday_weight(max_weight, curr_date)
         next_batch = fill_my_sack(weight, weighted_tasks)
