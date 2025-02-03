@@ -7,17 +7,17 @@ from todoist_api_python.api_async import TodoistAPIAsync
 from that_what_must_be_done.rescheduler import reschedule
 from that_what_must_be_done.types import ScheduleConfig
 
-config = load_dotenv()
+_ = load_dotenv()
 
 
 def main() -> None:
     config = {
-        "TODOIST_DEV_USER_TOKEN": os.getenv("TODOIST_DEV_USER_TOKEN"),
+        "TODOIST_USER_TOKEN": os.getenv("TODOIST_USER_TOKEN"),
         "CONFIG_PATH": os.getenv("CONFIG_PATH"),
     }
     config = {key: value for key, value in config.items() if value is not None}
 
-    api = TodoistAPIAsync(config["TODOIST_DEV_USER_TOKEN"])
+    api = TodoistAPIAsync(config["TODOIST_USER_TOKEN"])
 
     config_path = f"{config['CONFIG_PATH']}"
     if os.path.exists(config_path):
