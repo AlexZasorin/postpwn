@@ -1,6 +1,10 @@
-from .cli import cli as cli
+from .cli import cli
 
-# def main() -> None:
+
+def main() -> None:
+    cli()
+
+
 #     config = {
 #         "TODOIST_USER_TOKEN": os.getenv("TODOIST_USER_TOKEN"),
 #         "CONFIG_PATH": os.getenv("CONFIG_PATH"),
