@@ -1,5 +1,4 @@
 services:
-  # ofelia.job-run.datecron.schedule: "5 0 8 * * *"
   reschedule-tasks:
     init: true
     image: ghcr.io/alexzasorin/that-what-must-be-done/app:latest
@@ -21,8 +20,6 @@ services:
     environment:
       - TODOIST_USER_TOKEN=${TODOIST_USER_TOKEN}
       - TZ=US/Pacific
-    networks:
-      - default
   reschedule-recurring:
     init: true
     image: ghcr.io/alexzasorin/that-what-must-be-done/app:latest
@@ -42,8 +39,3 @@ services:
     environment:
       - TODOIST_USER_TOKEN=${TODOIST_USER_TOKEN}
       - TZ=US/Pacific
-    networks:
-      - default
-
-networks:
-  default:
