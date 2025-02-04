@@ -1,4 +1,4 @@
-from .cli import cli
+from .cli import cli  # pyright: ignore[reportUnusedImport]
 
 # def main() -> None:
 #     config = {
