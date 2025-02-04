@@ -2,7 +2,8 @@
 
 ## TODO
 
-- [ ] Test CLI implementation
+- [ ] Catch improper cron string
+- [ ] Try using V4 API for typing
 - [ ] Add limits as alternative to weights
 - [ ] Update deployment to use new scheme
 - [ ] Publish executable using PyInstaller

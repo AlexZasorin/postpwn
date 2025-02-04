@@ -1,8 +1,8 @@
 @setup-dotenv:
   sh scripts/setup-dotenv.sh
 
-@run:
-  uv run that-what-must-be-done
+run *args='':
+    uv run that-what-must-be-done {{args}}
 
 @lint:
   uv run ruff check

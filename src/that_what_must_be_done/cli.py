@@ -1,13 +1,17 @@
 import asyncio
+from functools import partial
 import os
 from typing import TypedDict, Unpack
-import click
+from zoneinfo import ZoneInfo
 
+from apscheduler.schedulers.asyncio import AsyncIOScheduler  # pyright: ignore[reportMissingTypeStubs]
+from apscheduler.triggers.cron import CronTrigger  # pyright: ignore[reportMissingTypeStubs]
+import click
 from dotenv import load_dotenv
 from todoist_api_python.api_async import TodoistAPIAsync
 
 from that_what_must_be_done.rescheduler import reschedule
-from that_what_must_be_done.types import ScheduleConfig
+from that_what_must_be_done.types import Rule, ScheduleConfig, WeightConfig
 
 _ = load_dotenv()
 
@@ -18,6 +22,42 @@ class RescheduleParams(TypedDict):
     dry_run: bool
     token: str | None
     time_zone: str
+    schedule: str | None
+
+
+async def run_schedule(
+    api: TodoistAPIAsync,
+    max_weight: WeightConfig | int,
+    filter: str,
+    rules: list[Rule],
+    dry_run: bool,
+    time_zone: str,
+    schedule: str,
+) -> None:
+    print(f"Running on schedule: {schedule}")
+    scheduler = AsyncIOScheduler()
+    job = partial(
+        reschedule,
+        api=api,
+        max_weight=max_weight,
+        rules=rules,
+        filter=filter,
+        dry_run=dry_run,
+        time_zone=time_zone,
+    )
+
+    _ = scheduler.add_job(  # pyright: ignore[reportUnknownMemberType]
+        job,
+        CronTrigger.from_crontab(  # pyright: ignore[reportUnknownMemberType]
+            schedule, timezone=ZoneInfo(time_zone)
+        ),
+    )
+
+    scheduler.start()
+
+    # I have to sleep here, otherwise the program will exit despite the scheduler/coroutines running
+    while True:
+        await asyncio.sleep(1000)
 
 
 @click.command(
@@ -58,8 +98,13 @@ class RescheduleParams(TypedDict):
     show_default=True,
     type=str,
 )
+@click.option(
+    "--schedule",
+    help="Cron schedule for rescheduling to run on a cadence.",
+    default=None,
+    type=str,
+)
 def cli(**kwargs: Unpack[RescheduleParams]) -> None:
-    print(kwargs)
     api = TodoistAPIAsync(kwargs["token"] if kwargs["token"] else "")
 
     if os.path.exists(kwargs["rules"]):
@@ -72,6 +117,23 @@ def cli(**kwargs: Unpack[RescheduleParams]) -> None:
         rules = []
 
     print(rules)
+
+    if kwargs["schedule"]:
+        try:
+            asyncio.run(
+                run_schedule(
+                    api=api,
+                    max_weight=max_weight,
+                    rules=rules,
+                    filter=kwargs["filter"],
+                    dry_run=kwargs["dry_run"],
+                    time_zone=kwargs["time_zone"],
+                    schedule=kwargs["schedule"],
+                )
+            )
+        except (KeyboardInterrupt, SystemExit):
+            pass
+        return
 
     asyncio.run(
         reschedule(

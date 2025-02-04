@@ -1,29 +1,45 @@
 services:
-  ofelia:
-    image: mcuadros/ofelia:latest
+  # ofelia.job-run.datecron.schedule: "5 0 8 * * *"
+  reschedule-tasks:
     init: true
-    depends_on:
-      - rescheduler
-    command: daemon --docker
-    container_name: ofelia
+    image: ghcr.io/alexzasorin/that-what-must-be-done/app:latest
+    container_name: reschedule-tasks
+    command:
+      [
+        "--filter",
+        "!assigned to:others & !no date & !recurring & no deadline & !p1",
+        "--rules",
+        "./app/rules.json",
+        "--dry-run",
+        "--time-zone",
+        "US/Pacific",
+        "--schedule",
+        "* * * * *",
+      ]
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    labels:
-      ofelia.enabled: "true"
-      ofelia.job-run.datecron.schedule: "5 0 8 * * *"
-      ofelia.job-run.datecron.container: "rescheduler"
-      ofelia.job-run.datecron.delete: "true"
+      - ~/.config/rescheduler/rules.json:/app/rules.json
+    environment:
+      - TODOIST_USER_TOKEN=${TODOIST_USER_TOKEN}
     networks:
       - default
-  rescheduler:
+  reschedule-recurring:
     init: true
-    image: ghcr.io/alexzasorin/that-what-must-be-done/app:sha-b3176fa
-    env_file: .env
-    container_name: rescheduler
+    image: ghcr.io/alexzasorin/that-what-must-be-done/app:latest
+    container_name: reschedule-recurring
+    command:
+      [
+        "--filter",
+        "!assigned to:others & !no date & overdue & recurring & no deadline & !p1",
+        "--dry-run",
+        "--time-zone",
+        "US/Pacific",
+        "--schedule",
+        "* * * * *",
+      ]
     volumes:
-      - ${CONFIG_PATH}:/app/rules.json
+      - ~/.config/rescheduler/rules.json:/app/rules.json
     environment:
-      - CONFIG_PATH=/app/rules.json
+      - TODOIST_USER_TOKEN=${TODOIST_USER_TOKEN}
     networks:
       - default
 
