@@ -105,6 +105,7 @@ async def run_schedule(
     type=str,
 )
 def cli(**kwargs: Unpack[RescheduleParams]) -> None:
+    print(kwargs)
     api = TodoistAPIAsync(kwargs["token"] if kwargs["token"] else "")
 
     if os.path.exists(kwargs["rules"]):
