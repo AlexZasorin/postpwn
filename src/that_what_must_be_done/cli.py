@@ -18,7 +18,7 @@ _ = load_dotenv()
 
 class RescheduleParams(TypedDict):
     filter: str
-    rules: str
+    rules: str | None
     dry_run: bool
     token: str | None
     time_zone: str
@@ -73,8 +73,6 @@ async def run_schedule(
 @click.option(
     "--rules",
     help="Path to JSON file containing rules for rescheduling.",
-    default="rules.json",
-    show_default=True,
     type=click.Path(),
 )
 @click.option(
@@ -108,7 +106,7 @@ def cli(**kwargs: Unpack[RescheduleParams]) -> None:
     print(kwargs)
     api = TodoistAPIAsync(kwargs["token"] if kwargs["token"] else "")
 
-    if os.path.exists(kwargs["rules"]):
+    if kwargs["rules"] and os.path.exists(kwargs["rules"]):
         with open(kwargs["rules"]) as f:
             schedule_config = ScheduleConfig.model_validate_json(f.read())
             max_weight = schedule_config.max_weight
