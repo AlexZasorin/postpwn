@@ -24,5 +24,3 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 ENV PATH="/app/.venv/bin:$PATH"
 
 ENTRYPOINT ["uv", "run", "that-what-must-be-done"]
-
-CMD []

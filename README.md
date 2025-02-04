@@ -9,5 +9,6 @@
 - [ ] Publish executable using PyInstaller
 - [ ] Publish docker image to GHCR and DockerHub
 - [ ] Add tests
+- [ ] Add proper logging
 - [ ] Add value to WeightedTask and increase value for older tasks, make optional
 - [ ] Create integration server for Todoist Integration

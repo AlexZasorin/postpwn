@@ -20,6 +20,7 @@ services:
       - ~/.config/rescheduler/rules.json:/app/rules.json
     environment:
       - TODOIST_USER_TOKEN=${TODOIST_USER_TOKEN}
+      - TZ=US/Pacific
     networks:
       - default
   reschedule-recurring:
@@ -40,6 +41,7 @@ services:
       - ~/.config/rescheduler/rules.json:/app/rules.json
     environment:
       - TODOIST_USER_TOKEN=${TODOIST_USER_TOKEN}
+      - TZ=US/Pacific
     networks:
       - default
 
