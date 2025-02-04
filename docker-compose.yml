@@ -8,12 +8,11 @@ services:
         "--filter",
         "!assigned to:others & !no date & !recurring & no deadline & !p1",
         "--rules",
-        "./app/rules.json",
-        "--dry-run",
+        "/app/rules.json",
         "--time-zone",
         "US/Pacific",
         "--schedule",
-        "* * * * *",
+        "0 8 * * *",
       ]
     volumes:
       - ~/.config/rescheduler/rules.json:/app/rules.json
@@ -28,14 +27,11 @@ services:
       [
         "--filter",
         "!assigned to:others & !no date & overdue & recurring & no deadline & !p1",
-        "--dry-run",
         "--time-zone",
         "US/Pacific",
         "--schedule",
-        "* * * * *",
+        "0 8 * * *",
       ]
-    volumes:
-      - ~/.config/rescheduler/rules.json:/app/rules.json
     environment:
       - TODOIST_USER_TOKEN=${TODOIST_USER_TOKEN}
       - TZ=US/Pacific
