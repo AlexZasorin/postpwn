@@ -18,7 +18,6 @@ services:
       - ~/.config/rescheduler/rules.json:/app/rules.json
     environment:
       - TODOIST_USER_TOKEN=${TODOIST_USER_TOKEN}
-      - TZ=US/Pacific
   reschedule-recurring:
     init: true
     image: ghcr.io/alexzasorin/that-what-must-be-done/app:latest
@@ -34,4 +33,3 @@ services:
       ]
     environment:
       - TODOIST_USER_TOKEN=${TODOIST_USER_TOKEN}
-      - TZ=US/Pacific
