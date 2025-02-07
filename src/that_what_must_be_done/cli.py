@@ -38,7 +38,7 @@ async def run_schedule(
     api: TodoistAPIAsync,
     max_weight: WeightConfig | int,
     filter: str,
-    rules: list[Rule],
+    rules: list[Rule] | None,
     dry_run: bool,
     time_zone: str,
     schedule: str,
@@ -124,9 +124,9 @@ def cli(**kwargs: Unpack[RescheduleParams]) -> None:
     else:
         logger.info("No rules provided, using defaults.")
         max_weight = 10
-        rules = []
+        rules = None
 
-    logger.info(rules)
+    logger.info(f"Rules: {rules}")
 
     if kwargs["schedule"]:
         try:
