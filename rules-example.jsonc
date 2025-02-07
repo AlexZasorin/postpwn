@@ -1,0 +1,19 @@
+{
+  "max_weight": 10,
+  // Alternatively, configure different weights for each day
+  // "max_weight": {
+  //   "sunday": 20,
+  //   "monday": 10,
+  //   "tuesday": 10,
+  //   "wednesday": 10,
+  //   "thursday": 10,
+  //   "friday": 4,
+  //   "saturday": 20,
+  // },
+  "rules": [
+    { "filter": "@< 15 min", "limit": 4 },
+    { "filter": "@< 60 min", "weight": 4 },
+    { "filter": "@< 3 hrs", "weight": 8 },
+    { "filter": "@> 3 hrs", "weight": 10 },
+  ],
+}

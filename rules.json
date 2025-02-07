@@ -1,9 +1,0 @@
-{
-  "max_weight": 10,
-  "rules": [
-    { "filter": "@< 15 min", "limit": 4 },
-    { "filter": "@< 60 min", "weight": 4 },
-    { "filter": "@< 3 hrs", "weight": 8 },
-    { "filter": "@> 3 hrs", "weight": 10 }
-  ]
-}

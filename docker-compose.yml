@@ -1,3 +1,5 @@
+# This is my actualy docker-compose file that I use to run the rescheduler service.
+# Will eventually replace this with an example and move my personal one out.
 services:
   reschedule-tasks:
     init: true
