@@ -129,8 +129,8 @@ Create a JSON file to define weights for different task labels and daily capacit
 - [ ] Add semantic release
 - [ ] Publish executable using PyInstaller
 - [ ] Add value to WeightedTask and increase value for older tasks, make optional
+- [ ] Allow overriding the default values for each priority
 - [ ] Move my deployment out of the main code
-- [ ] Create integration server for Todoist Integration
 
 ## License
 
