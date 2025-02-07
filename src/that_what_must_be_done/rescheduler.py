@@ -1,3 +1,5 @@
+import logging
+import sys
 from asyncio import Task as AsyncTask, create_task
 from collections import defaultdict
 from datetime import date, datetime, timedelta
@@ -8,9 +10,11 @@ from todoist_api_python.models import Due, Task
 from that_what_must_be_done.types import Rule, UpdateTaskParams, WeightConfig
 from that_what_must_be_done.weighted_task import WeightedTask
 
-from tenacity import retry, wait_exponential
+from tenacity import after_log, before_log, retry, stop_after_attempt, wait_exponential
 from zoneinfo import ZoneInfo
 
+logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 def weighted_adapter(task: Task, rules: list[Rule] | None) -> WeightedTask | None:
     if rules is None:
@@ -96,7 +100,12 @@ def get_weekday_weight(weight_config: WeightConfig | int, date: date) -> int:
             return 0
 
 
-@retry(wait=wait_exponential(multiplier=1, min=4, max=120))
+@retry(
+    reraise=True,
+    wait=wait_exponential(multiplier=1, min=4, max=120),
+    stop=stop_after_attempt(10),
+    before=before_log(logger, logging.DEBUG),
+    after=after_log(logger, logging.DEBUG),
 async def reschedule(
     api: TodoistAPIAsync,
     filter: str,
