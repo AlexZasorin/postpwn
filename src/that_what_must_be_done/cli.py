@@ -1,12 +1,18 @@
 import asyncio
-from functools import partial
+import logging
 import os
+import sys
+from functools import partial
 from typing import TypedDict, Unpack
 from zoneinfo import ZoneInfo
 
-from apscheduler.schedulers.asyncio import AsyncIOScheduler  # pyright: ignore[reportMissingTypeStubs]
-from apscheduler.triggers.cron import CronTrigger  # pyright: ignore[reportMissingTypeStubs]
 import click
+from apscheduler.schedulers.asyncio import (  # pyright: ignore[reportMissingTypeStubs]
+    AsyncIOScheduler,
+)
+from apscheduler.triggers.cron import (  # pyright: ignore[reportMissingTypeStubs]
+    CronTrigger,
+)
 from dotenv import load_dotenv
 from todoist_api_python.api_async import TodoistAPIAsync
 
@@ -14,6 +20,9 @@ from that_what_must_be_done.rescheduler import reschedule
 from that_what_must_be_done.types import Rule, ScheduleConfig, WeightConfig
 
 _ = load_dotenv()
+
+logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 
 class RescheduleParams(TypedDict):
@@ -34,7 +43,7 @@ async def run_schedule(
     time_zone: str,
     schedule: str,
 ) -> None:
-    print(f"Running on schedule: {schedule}")
+    logger.info(f"Running on schedule: {schedule}")
     scheduler = AsyncIOScheduler()
     job = partial(
         reschedule,
@@ -103,19 +112,21 @@ async def run_schedule(
     type=str,
 )
 def cli(**kwargs: Unpack[RescheduleParams]) -> None:
-    print(kwargs)
+    logger.debug(kwargs)
     api = TodoistAPIAsync(kwargs["token"] if kwargs["token"] else "")
 
     if kwargs["rules"] and os.path.exists(kwargs["rules"]):
+        logger.info(f"Loading rules from {kwargs['rules']}")
         with open(kwargs["rules"]) as f:
             schedule_config = ScheduleConfig.model_validate_json(f.read())
             max_weight = schedule_config.max_weight
             rules = schedule_config.rules
     else:
+        logger.info("No rules provided, using defaults.")
         max_weight = 10
         rules = []
 
-    print(rules)
+    logger.info(rules)
 
     if kwargs["schedule"]:
         try:

@@ -1,5 +1,6 @@
 import logging
 import sys
+
 from asyncio import Task as AsyncTask, create_task
 from collections import defaultdict
 from datetime import date, datetime, timedelta
@@ -16,6 +17,7 @@ from zoneinfo import ZoneInfo
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
+
 def weighted_adapter(task: Task, rules: list[Rule] | None) -> WeightedTask | None:
     if rules is None:
         return WeightedTask(task, 0)
@@ -25,12 +27,12 @@ def weighted_adapter(task: Task, rules: list[Rule] | None) -> WeightedTask | Non
     }
 
     if not task.labels:
-        print("Task has no labels, ignoring...")
+        logger.info("Task has no labels, ignoring...")
         return
 
     label = next((label for label in task.labels if label in filter_map), None)
     if not label:
-        print("Task has no matching labels, ignoring...")
+        logger.info("Task has no matching labels, ignoring...")
         return
 
     weight = filter_map[label]
@@ -106,6 +108,7 @@ def get_weekday_weight(weight_config: WeightConfig | int, date: date) -> int:
     stop=stop_after_attempt(10),
     before=before_log(logger, logging.DEBUG),
     after=after_log(logger, logging.DEBUG),
+)
 async def reschedule(
     api: TodoistAPIAsync,
     filter: str,
@@ -146,7 +149,9 @@ async def reschedule(
     for date_str, weighted_tasks in new_schedule.items():
         for task in weighted_tasks:
             if task.due and task.due.date != date_str:
-                print(f"Rescheduling {task.content} from {task.due.date} to {date_str}")
+                logger.info(
+                    f"Rescheduling {task.content} from {task.due.date} to {date_str}"
+                )
 
                 update_params = get_update_params(date_str, task.due)
 
