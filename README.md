@@ -1,5 +1,3 @@
-# that-what-must-be-done
-
 # That What Must Be Done
 
 A smart task rescheduler for Todoist that optimally distributes your tasks based
