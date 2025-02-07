@@ -12,7 +12,9 @@ on rules you set.
 ## Usage
 
 Currently the best way to use this project is through the docker image published
-to GHCR. Keep in mind that this is still in development and the API is subject to
+to GHCR. Eventually, a Python package and standalone binary will be provided.
+
+Keep in mind that this is still in development and the API is subject to
 change. I recommend pinning the version/SHA of the image you use until I get around
 to adding tests and proper versioning.
 
