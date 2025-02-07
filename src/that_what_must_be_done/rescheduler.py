@@ -117,11 +117,7 @@ async def reschedule(
     rules: list[Rule] | None = None,
     dry_run: bool = False,
 ) -> None:
-    try:
-        tasks = await api.get_tasks(filter=filter)  # pyright: ignore[reportUnknownMemberType]
-    except Exception as error:
-        print(error)
-        tasks: list[Task] = []
+    tasks = await api.get_tasks(filter=filter)  # pyright: ignore[reportUnknownMemberType]
 
     # Add weights based on rules
     weighted_tasks = [weighted_adapter(task, rules) for task in tasks]
