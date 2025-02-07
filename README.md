@@ -81,11 +81,15 @@ services:
 
 ### Rules File
 
+Weights can be assigned to tasks based on their labels. The rescheduler will optimally
+distribute tasks based on these weights, with higher priority tasks being valued
+more highly.
+
 Create a JSON file to define weights for different task labels and daily capacity:
 
 ```jsonc
 {
-  // Maximum weight of tasks allowed per day
+  // Maximum weight of tasks allowed per day.
   "max_weight": 10,
   // Alternatively, you can set different weights for each day
   // "max_weight": {
@@ -117,6 +121,8 @@ Create a JSON file to define weights for different task labels and daily capacit
 - [ ] Make logs not look like ass lol
 - [ ] Allow disabling "smart" rescheduling
 - [ ] Add tests
+- [ ] Switch to toml config???
+  - [ ] Merge CLI args and rules config into a unified configuration
 - [ ] Catch improper cron string
 - [ ] Try using V4 API of scheduler for typing
 - [ ] Add limits as alternative to weights
