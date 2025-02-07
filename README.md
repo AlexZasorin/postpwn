@@ -113,8 +113,9 @@ Create a JSON file to define weights for different task labels and daily capacit
 - [x] Publish docker image to GHCR
 - [x] Update deployment to use new scheme
 - [x] Add proper logging
-- [ ] Add proper README
+- [x] Add proper README
 - [ ] Make logs not look like ass lol
+- [ ] Allow disabling "smart" rescheduling
 - [ ] Add tests
 - [ ] Catch improper cron string
 - [ ] Try using V4 API of scheduler for typing
