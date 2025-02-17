@@ -42,7 +42,7 @@ async def run_schedule(
     dry_run: bool,
     time_zone: str,
     schedule: str,
-) -> None:
+) -> AsyncIOScheduler:
     logger.info(f"Running on schedule: {schedule}")
     scheduler = AsyncIOScheduler()
     job = partial(
@@ -64,9 +64,7 @@ async def run_schedule(
 
     scheduler.start()
 
-    # I have to sleep here, otherwise the program will exit despite the scheduler/coroutines running
-    while True:
-        await asyncio.sleep(1000)
+    return scheduler
 
 
 @click.command(
@@ -129,20 +127,23 @@ def cli(**kwargs: Unpack[RescheduleParams]) -> None:
     logger.info(f"Rules: {rules}")
 
     if kwargs["schedule"]:
-        try:
-            asyncio.run(
-                run_schedule(
-                    api=api,
-                    max_weight=max_weight,
-                    rules=rules,
-                    filter=kwargs["filter"],
-                    dry_run=kwargs["dry_run"],
-                    time_zone=kwargs["time_zone"],
-                    schedule=kwargs["schedule"],
-                )
+        loop = asyncio.get_event_loop()
+        schedule = loop.run_until_complete(
+            run_schedule(
+                api=api,
+                max_weight=max_weight,
+                rules=rules,
+                filter=kwargs["filter"],
+                dry_run=kwargs["dry_run"],
+                time_zone=kwargs["time_zone"],
+                schedule=kwargs["schedule"],
             )
+        )
+        try:
+            loop.run_forever()
         except (KeyboardInterrupt, SystemExit):
-            pass
+            schedule.shutdown()
+            loop.close()
         return
 
     asyncio.run(
