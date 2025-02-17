@@ -8,8 +8,8 @@ from datetime import date, datetime, timedelta
 from todoist_api_python.api_async import TodoistAPIAsync
 from todoist_api_python.models import Due, Task
 
-from that_what_must_be_done.types import Rule, UpdateTaskParams, WeightConfig
-from that_what_must_be_done.weighted_task import WeightedTask
+from postpwn.types import Rule, UpdateTaskParams, WeightConfig
+from postpwn.weighted_task import WeightedTask
 
 from tenacity import after_log, before_log, retry, stop_after_attempt, wait_exponential
 from zoneinfo import ZoneInfo

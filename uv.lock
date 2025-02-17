@@ -181,7 +181,7 @@ wheels = [
 ]
 
 [[package]]
-name = "that-what-must-be-done"
+name = "postpwn"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

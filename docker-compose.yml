@@ -3,7 +3,7 @@
 services:
   reschedule-tasks:
     init: true
-    image: ghcr.io/alexzasorin/that-what-must-be-done/app:latest
+    image: ghcr.io/alexzasorin/postpwn/app:latest
     container_name: reschedule-tasks
     command:
       [
@@ -24,7 +24,7 @@ services:
       - TODOIST_USER_TOKEN=${TODOIST_USER_TOKEN}
   reschedule-recurring:
     init: true
-    image: ghcr.io/alexzasorin/that-what-must-be-done/app:latest
+    image: ghcr.io/alexzasorin/postpwn/app:latest
     container_name: reschedule-recurring
     command:
       [

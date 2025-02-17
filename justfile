@@ -2,7 +2,7 @@
   sh scripts/setup-dotenv.sh
 
 run *args='':
-    uv run that-what-must-be-done {{args}}
+    uv run postpwn {{args}}
 
 @lint:
   uv run ruff check

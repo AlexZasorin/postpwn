@@ -16,8 +16,8 @@ from apscheduler.triggers.cron import (  # pyright: ignore[reportMissingTypeStub
 from dotenv import load_dotenv
 from todoist_api_python.api_async import TodoistAPIAsync
 
-from that_what_must_be_done.rescheduler import reschedule
-from that_what_must_be_done.types import Rule, ScheduleConfig, WeightConfig
+from postpwn.rescheduler import reschedule
+from postpwn.types import Rule, ScheduleConfig, WeightConfig
 
 _ = load_dotenv()
 

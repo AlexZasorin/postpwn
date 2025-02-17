@@ -1,5 +1,5 @@
 [project]
-name = "that-what-must-be-done"
+name = "postpwn"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [project.scripts]
-that-what-must-be-done = "that_what_must_be_done:main"
+postpwn = "postpwn:main"
 
 [build-system]
 requires = ["hatchling"]

@@ -1,4 +1,4 @@
-# That What Must Be Done
+# Postpwn
 
 A smart task rescheduler for Todoist that optimally distributes your tasks based
 on rules you set.
@@ -24,7 +24,7 @@ Example docker-compose file:
 services:
   reschedule-tasks:
     init: true
-    image: ghcr.io/alexzasorin/that-what-must-be-done/app:latest
+    image: ghcr.io/alexzasorin/postpwn/app:latest
     command:
       [
         # Reschedule tasks that are not assigned to others, have a date, are not
@@ -49,7 +49,7 @@ services:
       - ~/.config/rescheduler/rules.json:/app/rules.json
   reschedule-recurring:
     init: true
-    image: ghcr.io/alexzasorin/that-what-must-be-done/app:latest
+    image: ghcr.io/alexzasorin/postpwn/app:latest
     container_name: reschedule-recurring
     command:
       [
