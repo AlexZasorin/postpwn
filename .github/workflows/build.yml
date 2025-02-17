@@ -70,7 +70,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/AlexZasorin/postpwn/app
+          images: ghcr.io/AlexZasorin/postpwn
           flavor: latest=true
           tags: |
             type=sha,suffix=-{{date 'YYYYMMDDHHmmss'}}
