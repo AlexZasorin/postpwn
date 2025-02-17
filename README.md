@@ -134,4 +134,4 @@ Create a JSON file to define weights for different task labels and daily capacit
 
 ## License
 
-MIT
+GPL-3.0 License
