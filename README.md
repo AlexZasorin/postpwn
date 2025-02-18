@@ -83,7 +83,7 @@ services:
 
 Weights can be assigned to tasks based on their labels. The rescheduler will optimally
 distribute tasks based on these weights, with higher priority tasks being valued
-more highly.
+more.
 
 Create a JSON file to define weights for different task labels and daily capacity:
 
@@ -121,6 +121,7 @@ Create a JSON file to define weights for different task labels and daily capacit
 - [ ] Add tests
 - [ ] Make logs not look like ass lol
 - [ ] Allow disabling "smart" rescheduling
+- [ ] Consider retrying individual Todoist API calls instead of the entire rescheduling function
 - [ ] Switch to toml config???
   - [ ] Merge CLI args and rules config into a unified configuration
 - [ ] Catch improper cron string
