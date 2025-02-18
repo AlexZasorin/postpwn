@@ -118,9 +118,9 @@ Create a JSON file to define weights for different task labels and daily capacit
 - [x] Update deployment to use new scheme
 - [x] Add proper logging
 - [x] Add proper README
+- [ ] Add tests
 - [ ] Make logs not look like ass lol
 - [ ] Allow disabling "smart" rescheduling
-- [ ] Add tests
 - [ ] Switch to toml config???
   - [ ] Merge CLI args and rules config into a unified configuration
 - [ ] Catch improper cron string
@@ -131,6 +131,7 @@ Create a JSON file to define weights for different task labels and daily capacit
 - [ ] Add value to WeightedTask and increase value for older tasks, make optional
 - [ ] Allow overriding the default values for each priority
 - [ ] Move my deployment out of the main code
+- [ ] Allow "punting" of tasks further than today
 
 ## License
 

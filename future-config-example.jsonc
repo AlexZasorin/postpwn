@@ -1,0 +1,73 @@
+{
+  "schedule": "* * * * *",
+  "timezone": "US/Pacific",
+  "rulesets": [
+    // Reschedule all tasks selected by the filter to today
+    {
+      "filter": "some other filter here",
+      "rules": [],
+    },
+    // Reschedule all tasks by shifting them over by a day
+    {
+      "filter": "some other filter here",
+      "shift_tasks": true,
+    },
+    // Reschedule tasks selected by the filter such that:
+    // - Tasks with the specified label will never exceed the limit for a given day
+    // and overflowing tasks are rescheduled to the next available day
+    // - Tasks without the specified label are rescheduled to today
+    {
+      "filter": "some other filter here",
+      "rules": [{ "label": "@< 15 min", "limit": 4 }],
+    },
+    // Reschedule tasks selected by the filter such that:
+    // - Tasks with the specified label will never exceed the limit for a given day
+    // and overflowing tasks are rescheduled to the next available day
+    // - Tasks without the specified label are shifted over by a day
+    {
+      "filter": "some other filter here",
+      "shift_tasks": true,
+      "rules": [{ "label": "@< 15 min", "limit": 4 }],
+    },
+    // Reschedule tasks selected by the filter such that:
+    // - Tasks with the specified label and limit will never exceed the limit for a
+    // given day and overflowing tasks are rescheduled to the next available day
+    // - Tasks with the specified label and shift_tasks true will be shifted over by a day
+    // - Tasks without the specified label are rescheduled to today
+    {
+      "filter": "some other filter here",
+      "max_weight": 10,
+      "rules": [
+        { "label": "@< 15 min", "shift_tasks": true },
+        { "label": "@< 3 hrs", "limit": 4 },
+      ],
+    },
+    // Reschedule tasks selected by the filter such that:
+    // - Tasks with the specified label and limit will never exceed the limit for a
+    // given day and overflowing tasks are rescheduled to the next available day
+    // - Tasks with the specified label and shift_tasks false will be rescheduled to today
+    // - Tasks without the specified label are shifted over by a day
+    {
+      "filter": "some other filter here",
+      "max_weight": 10,
+      "shift_tasks": true,
+      "rules": [
+        { "label": "@< 15 min", "shift_tasks": false },
+        { "label": "@< 3 hrs", "limit": 4 },
+      ],
+    },
+    // Reschedule tasks selected by the filter such that:
+    // - Tasks with the specified label are rescheduled using smart rescheduling
+    // that optimizes task scheduling based on priority and weight of the task
+    // - Tasks without the specified label are rescheduled to today
+    {
+      "filter": "some other filter here",
+      "max_weight": 10,
+      "rules": [
+        { "label": "@< 60 min", "weight": 4 },
+        { "label": "@< 3 hrs", "weight": 8 },
+        { "label": "@> 3 hrs", "weight": 10 },
+      ],
+    },
+  ],
+}
