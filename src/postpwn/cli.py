@@ -13,6 +13,7 @@ from apscheduler.schedulers.asyncio import (  # pyright: ignore[reportMissingTyp
 from apscheduler.triggers.cron import (  # pyright: ignore[reportMissingTypeStubs]
     CronTrigger,
 )
+from asyncio import AbstractEventLoop
 from dotenv import load_dotenv
 from todoist_api_python.api_async import TodoistAPIAsync
 
@@ -80,6 +81,7 @@ async def run_schedule(
 @click.option(
     "--rules",
     help="Path to JSON file containing rules for rescheduling.",
+    default=None,
     type=click.Path(),
 )
 @click.option(
@@ -111,8 +113,18 @@ async def run_schedule(
 )
 def cli(**kwargs: Unpack[RescheduleParams]) -> None:
     logger.debug(kwargs)
-    api = TodoistAPIAsync(kwargs["token"] if kwargs["token"] else "")
 
+    api = TodoistAPIAsync(kwargs["token"] if kwargs["token"] else "")
+    loop = asyncio.get_event_loop()
+
+    return postpwn(api, loop, **kwargs)
+
+
+def postpwn(
+    api: TodoistAPIAsync,
+    loop: AbstractEventLoop,
+    **kwargs: Unpack[RescheduleParams],
+) -> None:
     if kwargs["rules"] and os.path.exists(kwargs["rules"]):
         logger.info(f"Loading rules from {kwargs['rules']}")
         with open(kwargs["rules"]) as f:
@@ -127,7 +139,6 @@ def cli(**kwargs: Unpack[RescheduleParams]) -> None:
     logger.info(f"Rules: {rules}")
 
     if kwargs["schedule"]:
-        loop = asyncio.get_event_loop()
         schedule = loop.run_until_complete(
             run_schedule(
                 api=api,
