@@ -1,3 +1,8 @@
+import asyncio
+
+from postpwn.api import FakeTodoistAPI
+from postpwn.cli import RescheduleParams, postpwn
+
 # Tests to make:
 
 # When no token is provided, an error should be raised
@@ -12,3 +17,20 @@
 # Passing invalid cron string raises an error
 
 # How to treat items with overlapping labels?
+
+
+def test_no_token() -> None:
+    kwargs: RescheduleParams = {
+        "token": None,
+        "filter": "label:test",
+        "rules": None,
+        "dry_run": True,
+        "time_zone": "UTC",
+        "schedule": None,
+    }
+
+    fake_api = FakeTodoistAPI("VALID_TOKEN")
+    loop = asyncio.new_event_loop()
+
+    postpwn(fake_api, loop, **kwargs)
+    loop.close()

@@ -5,9 +5,9 @@ from asyncio import Task as AsyncTask, create_task
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 
-from todoist_api_python.api_async import TodoistAPIAsync
 from todoist_api_python.models import Due, Task
 
+from postpwn.api import TodoistAPIProtcol
 from postpwn.types import Rule, UpdateTaskParams, WeightConfig
 from postpwn.weighted_task import WeightedTask
 
@@ -110,14 +110,14 @@ def get_weekday_weight(weight_config: WeightConfig | int, date: date) -> int:
     after=after_log(logger, logging.DEBUG),
 )
 async def reschedule(
-    api: TodoistAPIAsync,
+    api: TodoistAPIProtcol,
     filter: str,
     time_zone: str,
     max_weight: WeightConfig | int,
     rules: list[Rule] | None = None,
     dry_run: bool = False,
 ) -> None:
-    tasks = await api.get_tasks(filter=filter)  # pyright: ignore[reportUnknownMemberType]
+    tasks = await api.get_tasks(filter=filter)
 
     # Add weights based on rules
     weighted_tasks = [weighted_adapter(task, rules) for task in tasks]

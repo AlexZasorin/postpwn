@@ -2,6 +2,7 @@ import asyncio
 import logging
 import os
 import sys
+from asyncio import AbstractEventLoop
 from functools import partial
 from typing import TypedDict, Unpack
 from zoneinfo import ZoneInfo
@@ -13,10 +14,10 @@ from apscheduler.schedulers.asyncio import (  # pyright: ignore[reportMissingTyp
 from apscheduler.triggers.cron import (  # pyright: ignore[reportMissingTypeStubs]
     CronTrigger,
 )
-from asyncio import AbstractEventLoop
 from dotenv import load_dotenv
 from todoist_api_python.api_async import TodoistAPIAsync
 
+from postpwn.api import TodoistAPIProtcol
 from postpwn.rescheduler import reschedule
 from postpwn.types import Rule, ScheduleConfig, WeightConfig
 
@@ -36,7 +37,7 @@ class RescheduleParams(TypedDict):
 
 
 async def run_schedule(
-    api: TodoistAPIAsync,
+    api: TodoistAPIProtcol,
     max_weight: WeightConfig | int,
     filter: str,
     rules: list[Rule] | None,
@@ -121,7 +122,7 @@ def cli(**kwargs: Unpack[RescheduleParams]) -> None:
 
 
 def postpwn(
-    api: TodoistAPIAsync,
+    api: TodoistAPIProtcol,
     loop: AbstractEventLoop,
     **kwargs: Unpack[RescheduleParams],
 ) -> None:
@@ -157,7 +158,7 @@ def postpwn(
             loop.close()
         return
 
-    asyncio.run(
+    loop.run_until_complete(
         reschedule(
             api=api,
             max_weight=max_weight,
