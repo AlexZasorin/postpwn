@@ -1,4 +1,5 @@
 from typing import Protocol
+from unittest.mock import AsyncMock
 
 from requests import HTTPError, Session
 from todoist_api_python.models import Due, Duration, Task
@@ -16,6 +17,9 @@ class FakeTodoistAPI:
     async def get_tasks(self, **kwargs: object) -> list[Task]:
         if self.token != "VALID_TOKEN":
             raise HTTPError("401 Client Error: Unauthorized for url: idk")
+
+        if kwargs["filter"] == "":
+            return []
 
         return [
             Task(
@@ -46,5 +50,4 @@ class FakeTodoistAPI:
             )
         ]
 
-    async def update_task(self, task_id: str, **kwargs: object) -> bool:
-        return True
+    update_task = AsyncMock(return_value=True)

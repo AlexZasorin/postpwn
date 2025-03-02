@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 from asyncio import AbstractEventLoop
+from datetime import date, datetime
 from functools import partial
 from typing import TypedDict, Unpack
 from zoneinfo import ZoneInfo
@@ -54,7 +55,6 @@ async def run_schedule(
         rules=rules,
         filter=filter,
         dry_run=dry_run,
-        time_zone=time_zone,
     )
 
     _ = scheduler.add_job(  # pyright: ignore[reportUnknownMemberType]
@@ -118,12 +118,14 @@ def cli(**kwargs: Unpack[RescheduleParams]) -> None:
     api = TodoistAPIAsync(kwargs["token"] if kwargs["token"] else "")
     loop = asyncio.get_event_loop()
 
-    return postpwn(api, loop, **kwargs)
+    curr_date = datetime.now(tz=ZoneInfo(kwargs["time_zone"])).date()
+    return postpwn(api, loop, curr_date, **kwargs)
 
 
 def postpwn(
     api: TodoistAPIProtocol,
     loop: AbstractEventLoop,
+    curr_date: date,
     **kwargs: Unpack[RescheduleParams],
 ) -> None:
     if kwargs["rules"] and os.path.exists(kwargs["rules"]):
@@ -162,9 +164,9 @@ def postpwn(
         reschedule(
             api=api,
             max_weight=max_weight,
+            curr_date=curr_date,
             rules=rules,
             filter=kwargs["filter"],
             dry_run=kwargs["dry_run"],
-            time_zone=kwargs["time_zone"],
         )
     )

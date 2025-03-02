@@ -22,7 +22,6 @@ from tenacity import (
     stop_after_attempt,
     wait_exponential_jitter,
 )
-from zoneinfo import ZoneInfo
 
 _ = load_dotenv()
 
@@ -127,8 +126,8 @@ def build_retry(fn: WrappedFn) -> WrappedFn:
 async def reschedule(
     api: TodoistAPIProtocol,
     filter: str,
-    time_zone: str,
     max_weight: WeightConfig | int,
+    curr_date: date,
     rules: list[Rule] | None = None,
     dry_run: bool = False,
 ) -> None:
@@ -147,7 +146,6 @@ async def reschedule(
     )
 
     new_schedule: dict[str, list[WeightedTask]] = defaultdict(list)
-    curr_date = datetime.now(tz=ZoneInfo(time_zone)).date()
     while len(weighted_tasks) != 0:
         weight = get_weekday_weight(max_weight, curr_date)
         next_batch = fill_my_sack(weight, weighted_tasks)
