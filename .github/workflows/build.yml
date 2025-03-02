@@ -35,7 +35,9 @@ jobs:
         run: |
           just lint
 
-      # - name: Run tests
+      - name: Run tests
+        run: |
+          just test
 
   build:
     name: Build
