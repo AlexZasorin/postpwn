@@ -1,18 +1,30 @@
+from functools import partial
 import logging
+import os
 import sys
 
 from asyncio import Task as AsyncTask, create_task
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 
+from dotenv import load_dotenv
 from todoist_api_python.models import Due, Task
 
 from postpwn.api import TodoistAPIProtcol
 from postpwn.types import Rule, UpdateTaskParams, WeightConfig
 from postpwn.weighted_task import WeightedTask
 
-from tenacity import after_log, before_log, retry, stop_after_attempt, wait_exponential
+from tenacity import (
+    WrappedFn,
+    after_log,
+    before_log,
+    retry,
+    stop_after_attempt,
+    wait_exponential_jitter,
+)
 from zoneinfo import ZoneInfo
+
+_ = load_dotenv()
 
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -102,13 +114,16 @@ def get_weekday_weight(weight_config: WeightConfig | int, date: date) -> int:
             return 0
 
 
-@retry(
-    reraise=True,
-    wait=wait_exponential(multiplier=1, min=4, max=120),
-    stop=stop_after_attempt(10),
-    before=before_log(logger, logging.DEBUG),
-    after=after_log(logger, logging.DEBUG),
-)
+def build_retry(fn: WrappedFn) -> WrappedFn:
+    return retry(
+        reraise=True,
+        wait=wait_exponential_jitter(max=120),
+        stop=stop_after_attempt(int(os.getenv("RETRY_ATTEMPTS", 3))),
+        before=before_log(logger, logging.DEBUG),
+        after=after_log(logger, logging.DEBUG),
+    )(fn)
+
+
 async def reschedule(
     api: TodoistAPIProtcol,
     filter: str,
@@ -117,7 +132,9 @@ async def reschedule(
     rules: list[Rule] | None = None,
     dry_run: bool = False,
 ) -> None:
-    tasks = await api.get_tasks(filter=filter)
+    get_tasks = build_retry(partial(api.get_tasks, filter=filter))
+
+    tasks = await get_tasks()
 
     # Add weights based on rules
     weighted_tasks = [weighted_adapter(task, rules) for task in tasks]
@@ -152,7 +169,11 @@ async def reschedule(
                 update_params = get_update_params(date_str, task.due)
 
                 if not dry_run:
-                    result = create_task(api.update_task(task.id, **update_params))  # pyright: ignore[reportUnknownMemberType]
+                    update_task = build_retry(
+                        partial(api.update_task, task_id=task.id, kwargs=update_params)
+                    )
+
+                    result = create_task(update_task())
                     coroutines.add(result)
 
     # Wait to finish so that the program doesn't exit early

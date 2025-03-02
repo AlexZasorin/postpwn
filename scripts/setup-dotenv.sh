@@ -3,9 +3,8 @@
 # default settings
 ####################################
 
-TODOIST_CLIENTID=""
-TODOIST_API_KEY=""
 TODOIST_USER_TOKEN=""
+RETRY_ATTEMPTS=10
 
 # direnv
 ####################################
@@ -27,9 +26,8 @@ fi
 ####################################
 cat <<EOF > .env
 
-TODOIST_CLIENTID=$TODOIST_CLIENTID
-TODOIST_API_KEY=$TODOIST_TOKEN
 TODOIST_USER_TOKEN=$TODOIST_USER_TOKEN
+RETRY_ATTEMPTS=$RETRY_ATTEMPTS
 
 EOF
 

@@ -121,7 +121,7 @@ Create a JSON file to define weights for different task labels and daily capacit
 - [ ] Add tests
 - [ ] Make logs not look like ass lol
 - [ ] Allow disabling "smart" rescheduling
-- [ ] Consider retrying individual Todoist API calls instead of the entire rescheduling function
+- [x] Consider retrying individual Todoist API calls instead of the entire rescheduling function
 - [ ] Switch to toml config???
   - [ ] Merge CLI args and rules config into a unified configuration
 - [ ] Catch improper cron string
