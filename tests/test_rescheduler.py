@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Generator
 
 import pytest
+from asyncio import AbstractEventLoop
 from requests import HTTPError
 
 from postpwn.api import FakeTodoistAPI
@@ -30,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
-def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
+def event_loop() -> Generator[AbstractEventLoop, None, None]:
     loop = asyncio.new_event_loop()
     yield loop
     loop.close()
@@ -38,9 +39,7 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
 
 # pyright: reportUnusedFunction=false
 class TestPostpwn:
-    """function `postpwn`"""
-
-    def test_no_token_provided(self, event_loop: asyncio.AbstractEventLoop) -> None:
+    def test_no_token_provided(self, event_loop: AbstractEventLoop) -> None:
         """raises an error when no token is provided"""
 
         kwargs: RescheduleParams = {
@@ -60,7 +59,7 @@ class TestPostpwn:
             with pytest.raises(HTTPError):
                 postpwn(fake_api, event_loop, curr_date, **kwargs)
 
-    def test_no_filter_provided(self, event_loop: asyncio.AbstractEventLoop) -> None:
+    def test_no_filter_provided(self, event_loop: AbstractEventLoop) -> None:
         """does nothing when no filter is provided"""
         kwargs: RescheduleParams = {
             "token": "VALID_TOKEN",
@@ -73,7 +72,7 @@ class TestPostpwn:
 
         fake_api = FakeTodoistAPI("VALID_TOKEN")
 
-        curr_date = datetime(2022, 1, 1).date()
+        curr_date = datetime(2025, 1, 1).date()
 
         with set_env({"RETRY_ATTEMPTS": "1"}):
             postpwn(fake_api, event_loop, curr_date, **kwargs)
@@ -101,5 +100,5 @@ class TestPostpwn:
         assert fake_api.update_task.call_count == 1
         assert (
             fake_api.update_task.call_args.kwargs["kwargs"]["due_datetime"]
-            == "2022-01-01T12:00:00"
+            == "2025-01-01T12:00:00"
         )
