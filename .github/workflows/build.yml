@@ -11,6 +11,8 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    permissions:
+      packages: read
     steps:
       - name: Install Just
         uses: extractions/setup-just@v2
