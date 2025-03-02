@@ -1,7 +1,7 @@
 # Postpwn
 
-A smart task rescheduler for Todoist that optimally distributes your tasks based
-on rules you set.
+A smart task rescheduler for Todoist that optimally distributes your tasks
+based on rules you set.
 
 ## Features
 
@@ -11,12 +11,13 @@ on rules you set.
 
 ## Usage
 
-Currently the best way to use this project is through the docker image published
-to GHCR. Eventually, a Python package and standalone binary will be provided.
+Currently the best way to use this project is through the docker image
+published to GHCR. Eventually, a Python package and standalone binary will be
+provided.
 
 Keep in mind that this is still in development and the API is subject to
-change. I recommend pinning the version/SHA of the image you use until I get around
-to adding tests and proper versioning.
+change. I recommend pinning the version/SHA of the image you use until I get
+around to adding tests and proper versioning.
 
 Example docker-compose file:
 
@@ -70,10 +71,12 @@ services:
 
 ## Options
 
-- `--filter`: Todoist filter to select tasks (default: "!assigned to:others & !no date & !recurring & no deadline")
+- `--filter`: Todoist filter to select tasks (default: "!assigned to:others &
+!no date & !recurring & no deadline")
 - `--rules`: Path to JSON rules file
 - `--dry-run`: Simulate changes without applying them
-- `--token`: Todoist API token (can also be set via TODOIST_USER_TOKEN environment variable)
+- `--token`: Todoist API token (can also be set via TODOIST_USER_TOKEN
+environment variable)
 - `--time-zone`: Time zone for scheduling (default: "Etc/UTC")
 - `--schedule`: Cron string for running on a schedule
 
@@ -81,11 +84,12 @@ services:
 
 ### Rules File
 
-Weights can be assigned to tasks based on their labels. The rescheduler will optimally
-distribute tasks based on these weights, with higher priority tasks being valued
-more.
+Weights can be assigned to tasks based on their labels. The rescheduler will
+optimally distribute tasks based on these weights, with higher priority tasks
+being valued more.
 
-Create a JSON file to define weights for different task labels and daily capacity:
+Create a JSON file to define weights for different task labels and daily
+capacity:
 
 ```jsonc
 {
@@ -121,7 +125,8 @@ Create a JSON file to define weights for different task labels and daily capacit
 - [ ] Add tests
 - [ ] Make logs not look like ass lol
 - [ ] Allow disabling "smart" rescheduling
-- [x] Consider retrying individual Todoist API calls instead of the entire rescheduling function
+- [x] Consider retrying individual Todoist API calls instead of the entire
+rescheduling function
 - [ ] Switch to toml config???
   - [ ] Merge CLI args and rules config into a unified configuration
 - [ ] Catch improper cron string
@@ -129,7 +134,8 @@ Create a JSON file to define weights for different task labels and daily capacit
 - [ ] Add limits as alternative to weights
 - [ ] Add semantic release
 - [ ] Publish executable using PyInstaller
-- [ ] Add value to WeightedTask and increase value for older tasks, make optional
+- [ ] Add value to WeightedTask and increase value for older tasks, make
+optional
 - [ ] Allow overriding the default values for each priority
 - [ ] Move my deployment out of the main code
 - [ ] Allow "punting" of tasks further than today
