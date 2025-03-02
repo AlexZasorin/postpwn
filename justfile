@@ -8,4 +8,4 @@ run *args='':
   uv run ruff check
 
 @test:
-  uv run pytest --pyspec
+  uv run pytest --spec
