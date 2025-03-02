@@ -179,7 +179,7 @@ dev = [
     { name = "pytest" },
     { name = "pytest-clarity" },
     { name = "pytest-cov" },
-    { name = "pytest-pyspec" },
+    { name = "pytest-spec" },
     { name = "ruff" },
 ]
 
@@ -198,7 +198,7 @@ dev = [
     { name = "pytest", specifier = ">=8.3.4" },
     { name = "pytest-clarity", specifier = ">=1.0.1" },
     { name = "pytest-cov", specifier = ">=6.0.0" },
-    { name = "pytest-pyspec", specifier = ">=0.10.0" },
+    { name = "pytest-spec", specifier = ">=4.0.0" },
     { name = "ruff", specifier = ">=0.9.2" },
 ]
 
@@ -299,15 +299,12 @@ wheels = [
 ]
 
 [[package]]
-name = "pytest-pyspec"
-version = "0.10.0"
+name = "pytest-spec"
+version = "4.0.0"
 source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pytest" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/05/66/79da694967173baa665423ebe3e3dce58143119d0f5d7dd3bad74e4a55da/pytest_pyspec-0.10.0.tar.gz", hash = "sha256:72df3c0e853e25ab2484d059f1bebef3e2af88f346a99c16c4095a7a91a66441", size = 4524 }
+sdist = { url = "https://files.pythonhosted.org/packages/79/45/ae0b948e4c0779e8a07b622bf7ac015dbdbf0cbdf2271b4dec79e8e7aa06/pytest_spec-4.0.0.tar.gz", hash = "sha256:71c9985e97d090a69b1f1b7adb64e7a208fb1ac42432ce9566c32cdd6b44c1ad", size = 1192093 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/3b/f9/0a915633bf3bb1a6380e6f22577ad7c6a1c3618ccbf7d7130e306c834cba/pytest_pyspec-0.10.0-py3-none-any.whl", hash = "sha256:68bdd21a9e5d2fe8ee8be2b5ff72d58fc7b8d2226f6c0dae49973e35c766fafd", size = 5744 },
+    { url = "https://files.pythonhosted.org/packages/e1/62/5855ce49868dde9a7c1cce1adfa12152c5d249a702a51a63af0510b75a08/pytest_spec-4.0.0-py3-none-any.whl", hash = "sha256:5d85ed29d9240722dfe778bed80022b917154c8200020864a61bfa65f138f70a", size = 14317 },
 ]
 
 [[package]]

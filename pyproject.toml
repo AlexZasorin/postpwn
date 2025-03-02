@@ -29,8 +29,13 @@ dev = [
     "pytest>=8.3.4",
     "ruff>=0.9.2",
     "pytest-clarity>=1.0.1",
-    "pytest-pyspec>=0.10.0",
+    "pytest-spec>=4.0.0",
 ]
 
 [tool.basedpyright]
-    typeCheckingMode = "strict"
+typeCheckingMode = "strict"
+
+[tool.pytest.ini_options]
+addopts = "--spec"
+spec_test_format = "{result} {docstring_summary}"
+log_cli = true
