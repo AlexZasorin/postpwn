@@ -28,6 +28,8 @@ dev = [
     "pytest-cov>=6.0.0",
     "pytest>=8.3.4",
     "ruff>=0.9.2",
+    "pytest-clarity>=1.0.1",
+    "pytest-pyspec>=0.10.0",
 ]
 
 [tool.basedpyright]
