@@ -37,7 +37,6 @@ def event_loop() -> Generator[AbstractEventLoop, None, None]:
     loop.close()
 
 
-# pyright: reportUnusedFunction=false
 class TestPostpwn:
     def test_no_token_provided(self, event_loop: AbstractEventLoop) -> None:
         """raises an error when no token is provided"""
@@ -92,7 +91,7 @@ class TestPostpwn:
 
         fake_api = FakeTodoistAPI("VALID_TOKEN")
 
-        curr_date = datetime(2022, 1, 1).date()
+        curr_date = datetime(2025, 1, 1).date()
 
         with set_env({"RETRY_ATTEMPTS": "1"}):
             postpwn(fake_api, event_loop, curr_date, **kwargs)
