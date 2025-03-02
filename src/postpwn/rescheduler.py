@@ -10,7 +10,7 @@ from datetime import date, datetime, timedelta
 from dotenv import load_dotenv
 from todoist_api_python.models import Due, Task
 
-from postpwn.api import TodoistAPIProtcol
+from postpwn.api import TodoistAPIProtocol
 from postpwn.types import Rule, UpdateTaskParams, WeightConfig
 from postpwn.weighted_task import WeightedTask
 
@@ -125,7 +125,7 @@ def build_retry(fn: WrappedFn) -> WrappedFn:
 
 
 async def reschedule(
-    api: TodoistAPIProtcol,
+    api: TodoistAPIProtocol,
     filter: str,
     time_zone: str,
     max_weight: WeightConfig | int,

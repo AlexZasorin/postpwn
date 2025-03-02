@@ -17,7 +17,7 @@ from apscheduler.triggers.cron import (  # pyright: ignore[reportMissingTypeStub
 from dotenv import load_dotenv
 from todoist_api_python.api_async import TodoistAPIAsync
 
-from postpwn.api import TodoistAPIProtcol
+from postpwn.api import TodoistAPIProtocol
 from postpwn.rescheduler import reschedule
 from postpwn.types import Rule, ScheduleConfig, WeightConfig
 
@@ -37,7 +37,7 @@ class RescheduleParams(TypedDict):
 
 
 async def run_schedule(
-    api: TodoistAPIProtcol,
+    api: TodoistAPIProtocol,
     max_weight: WeightConfig | int,
     filter: str,
     rules: list[Rule] | None,
@@ -122,7 +122,7 @@ def cli(**kwargs: Unpack[RescheduleParams]) -> None:
 
 
 def postpwn(
-    api: TodoistAPIProtcol,
+    api: TodoistAPIProtocol,
     loop: AbstractEventLoop,
     **kwargs: Unpack[RescheduleParams],
 ) -> None:

@@ -4,7 +4,7 @@ from requests import HTTPError, Session
 from todoist_api_python.models import Due, Duration, Task
 
 
-class TodoistAPIProtcol(Protocol):
+class TodoistAPIProtocol(Protocol):
     async def get_tasks(self, **kwargs: object) -> list[Task]: ...
     async def update_task(self, task_id: str, **kwargs: object) -> bool: ...
 
