@@ -1,13 +1,38 @@
-from typing import Protocol
+from typing import Optional, Protocol, TypedDict
 from unittest.mock import AsyncMock
 
 from requests import HTTPError, Session
 from todoist_api_python.models import Due, Duration, Task
 
 
+class GetTasksInput(TypedDict):
+    project_id: Optional[str]
+    section_id: Optional[str]
+    label: Optional[str]
+    filter: Optional[str]
+    lang: Optional[str]
+    ids: Optional[list[int]]
+
+
+class UpdateTaskInput(TypedDict):
+    content: Optional[str]
+    description: Optional[str]
+    labels: Optional[list[str]]
+    priority: Optional[int]
+    due_string: Optional[str]
+    due_date: Optional[str]
+    due_datetime: Optional[str]
+    due_lang: Optional[str]
+    assignee_id: Optional[int]
+    duration: Optional[int]
+    duration_unit: Optional[str]
+    deadline_date: Optional[str]
+    deadline_lang: Optional[str]
+
+
 class TodoistAPIProtocol(Protocol):
-    async def get_tasks(self, **kwargs: object) -> list[Task]: ...
-    async def update_task(self, task_id: str, **kwargs: object) -> bool: ...
+    async def get_tasks(self, **kwargs: GetTasksInput) -> list[Task]: ...
+    async def update_task(self, task_id: str, **kwargs: UpdateTaskInput) -> bool: ...
 
 
 class FakeTodoistAPI:
