@@ -1,4 +1,4 @@
-from typing import Optional, Protocol, TypedDict
+from typing import NotRequired, Protocol, TypedDict
 from unittest.mock import AsyncMock
 
 from requests import HTTPError, Session
@@ -6,28 +6,28 @@ from todoist_api_python.models import Due, Duration, Task
 
 
 class GetTasksInput(TypedDict):
-    project_id: Optional[str]
-    section_id: Optional[str]
-    label: Optional[str]
-    filter: Optional[str]
-    lang: Optional[str]
-    ids: Optional[list[int]]
+    project_id: NotRequired[str]
+    section_id: NotRequired[str]
+    label: NotRequired[str]
+    filter: NotRequired[str]
+    lang: NotRequired[str]
+    ids: NotRequired[list[int]]
 
 
 class UpdateTaskInput(TypedDict):
-    content: Optional[str]
-    description: Optional[str]
-    labels: Optional[list[str]]
-    priority: Optional[int]
-    due_string: Optional[str]
-    due_date: Optional[str]
-    due_datetime: Optional[str]
-    due_lang: Optional[str]
-    assignee_id: Optional[int]
-    duration: Optional[int]
-    duration_unit: Optional[str]
-    deadline_date: Optional[str]
-    deadline_lang: Optional[str]
+    content: NotRequired[str]
+    description: NotRequired[str]
+    labels: NotRequired[list[str]]
+    priority: NotRequired[int]
+    due_string: NotRequired[str]
+    due_date: NotRequired[str]
+    due_datetime: NotRequired[str]
+    due_lang: NotRequired[str]
+    assignee_id: NotRequired[int]
+    duration: NotRequired[int]
+    duration_unit: NotRequired[str]
+    deadline_date: NotRequired[str]
+    deadline_lang: NotRequired[str]
 
 
 class TodoistAPIProtocol(Protocol):
