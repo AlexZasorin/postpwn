@@ -1,10 +1,10 @@
-# This is my actualy docker-compose file that I use to run the rescheduler service.
+# This is my actual docker-compose file that I use to run the rescheduler service.
 # Will eventually replace this with an example and move my personal one out.
-name: that-what-must-be-done
+name: postpwn
 services:
   reschedule-tasks:
     init: true
-    image: ghcr.io/alexzasorin/that-what-must-be-done/app:latest
+    image: ghcr.io/alexzasorin/postpwn:latest
     container_name: reschedule-tasks
     command:
       [
@@ -15,7 +15,7 @@ services:
         "--time-zone",
         "US/Pacific",
         "--schedule",
-        "0 0 * * *",
+        "* * * * *",
         "--token",
         "${TODOIST_USER_TOKEN}",
       ]
@@ -25,7 +25,7 @@ services:
       - TODOIST_USER_TOKEN=${TODOIST_USER_TOKEN}
   reschedule-recurring:
     init: true
-    image: ghcr.io/alexzasorin/that-what-must-be-done/app:latest
+    image: ghcr.io/alexzasorin/postpwn:latest
     container_name: reschedule-recurring
     command:
       [
@@ -34,7 +34,7 @@ services:
         "--time-zone",
         "US/Pacific",
         "--schedule",
-        "0 0 * * *",
+        "* * * * *",
         "--token",
         "${TODOIST_USER_TOKEN}",
       ]
