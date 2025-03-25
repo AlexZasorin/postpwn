@@ -98,6 +98,6 @@ class TestPostpwn:
 
         assert fake_api.update_task.call_count == 1
         assert (
-            fake_api.update_task.call_args.kwargs["kwargs"]["due_datetime"]
+            fake_api.update_task.call_args.kwargs["due_datetime"]
             == "2025-01-01T12:00:00"
         )
