@@ -10,8 +10,8 @@ from datetime import date, datetime, timedelta
 from dotenv import load_dotenv
 from todoist_api_python.models import Due, Task
 
-from postpwn.api import TodoistAPIProtocol
-from postpwn.types import Rule, UpdateTaskParams, WeightConfig
+from postpwn.api import TodoistAPIProtocol, UpdateTaskInput
+from postpwn.types import Rule, WeightConfig
 from postpwn.weighted_task import WeightedTask
 
 from tenacity import (
@@ -74,8 +74,8 @@ def fill_my_sack(
     return selected[max_weight]
 
 
-def get_update_params(date_str: str, due: Due) -> UpdateTaskParams:
-    update_params: UpdateTaskParams = {}
+def get_update_params(date_str: str, due: Due) -> UpdateTaskInput:
+    update_params: UpdateTaskInput = {}
     if due.datetime:
         time = datetime.strptime(due.datetime, "%Y-%m-%dT%H:%M:%S").time()
         new_datetime = datetime.strptime(f"{date_str} {time}", "%Y-%m-%d %H:%M:%S")
@@ -131,7 +131,7 @@ async def reschedule(
     rules: list[Rule] | None = None,
     dry_run: bool = False,
 ) -> None:
-    get_tasks = build_retry(partial(api.get_tasks, filter=filter))
+    get_tasks = build_retry(partial(api.get_tasks, **{"filter": filter}))
 
     tasks = await get_tasks()
 
@@ -142,7 +142,7 @@ async def reschedule(
     weighted_tasks = [task for task in weighted_tasks if task is not None]
 
     weighted_tasks.sort(
-        key=lambda task: task.due.date if task.due else datetime.max.date(),
+        key=lambda task: task.due.date if task.due else str(datetime.max.date()),
     )
 
     new_schedule: dict[str, list[WeightedTask]] = defaultdict(list)
@@ -168,7 +168,7 @@ async def reschedule(
 
                 if not dry_run:
                     update_task = build_retry(
-                        partial(api.update_task, task_id=task.id, kwargs=update_params)
+                        partial(api.update_task, task_id=task.id, **update_params)
                     )
 
                     result = create_task(update_task())
