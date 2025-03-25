@@ -40,6 +40,7 @@ class RescheduleParams(TypedDict):
 async def run_schedule(
     api: TodoistAPIProtocol,
     max_weight: WeightConfig | int,
+    curr_date: date,
     filter: str,
     rules: list[Rule] | None,
     dry_run: bool,
@@ -52,6 +53,7 @@ async def run_schedule(
         reschedule,
         api=api,
         max_weight=max_weight,
+        curr_date=curr_date,
         rules=rules,
         filter=filter,
         dry_run=dry_run,
@@ -146,6 +148,7 @@ def postpwn(
             run_schedule(
                 api=api,
                 max_weight=max_weight,
+                curr_date=curr_date,
                 rules=rules,
                 filter=kwargs["filter"],
                 dry_run=kwargs["dry_run"],
