@@ -15,7 +15,7 @@ services:
         "--time-zone",
         "US/Pacific",
         "--schedule",
-        "* * * * *",
+        "0 0 * * *",
         "--token",
         "${TODOIST_USER_TOKEN}",
       ]
@@ -34,7 +34,7 @@ services:
         "--time-zone",
         "US/Pacific",
         "--schedule",
-        "* * * * *",
+        "0 0 * * *",
         "--token",
         "${TODOIST_USER_TOKEN}",
       ]
