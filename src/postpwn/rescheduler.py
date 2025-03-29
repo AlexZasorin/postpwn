@@ -149,9 +149,8 @@ async def reschedule(
     )
 
     new_schedule: dict[str, list[WeightedTask]] = defaultdict(list)
+    reschedule_date = curr_date or datetime.now(tz=ZoneInfo(time_zone)).date()
     while len(weighted_tasks) != 0:
-        reschedule_date = curr_date or datetime.now(tz=ZoneInfo(time_zone)).date()
-
         weight = get_weekday_weight(max_weight, reschedule_date)
         next_batch = fill_my_sack(weight, weighted_tasks)
 
