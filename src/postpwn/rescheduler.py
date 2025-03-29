@@ -6,6 +6,7 @@ import sys
 from asyncio import Task as AsyncTask, create_task
 from collections import defaultdict
 from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
 from todoist_api_python.models import Due, Task
@@ -127,7 +128,8 @@ async def reschedule(
     api: TodoistAPIProtocol,
     filter: str,
     max_weight: WeightConfig | int,
-    curr_date: date,
+    time_zone: str,
+    curr_date: date | None,
     rules: list[Rule] | None = None,
     dry_run: bool = False,
 ) -> None:
@@ -147,13 +149,15 @@ async def reschedule(
 
     new_schedule: dict[str, list[WeightedTask]] = defaultdict(list)
     while len(weighted_tasks) != 0:
-        weight = get_weekday_weight(max_weight, curr_date)
+        reschedule_date = curr_date or datetime.now(tz=ZoneInfo(time_zone)).date()
+
+        weight = get_weekday_weight(max_weight, reschedule_date)
         next_batch = fill_my_sack(weight, weighted_tasks)
 
         new_schedule[str(curr_date)].extend(next_batch)
         weighted_tasks = [task for task in weighted_tasks if task not in next_batch]
 
-        curr_date += timedelta(days=1)
+        reschedule_date += timedelta(days=1)
 
     # We need to keep track of (async)tasks so they don't get garbage collected? lol
     coroutines: set[AsyncTask[bool]] = set()
