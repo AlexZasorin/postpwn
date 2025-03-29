@@ -1,4 +1,3 @@
-from functools import partial
 import logging
 import os
 import sys
@@ -124,6 +123,10 @@ def build_retry(fn: WrappedFn) -> WrappedFn:
     )(fn)
 
 
+async def get_tasks_with_retry(api: TodoistAPIProtocol, filter: str) -> list[Task]:
+    return await build_retry(lambda: api.get_tasks(filter=filter))()
+
+
 async def reschedule(
     api: TodoistAPIProtocol,
     filter: str,
@@ -133,9 +136,7 @@ async def reschedule(
     rules: list[Rule] | None = None,
     dry_run: bool = False,
 ) -> None:
-    get_tasks = build_retry(partial(api.get_tasks, **{"filter": filter}))
-
-    tasks = await get_tasks()
+    tasks = await get_tasks_with_retry(api, filter)
 
     # Add weights based on rules
     weighted_tasks = [weighted_adapter(task, rules) for task in tasks]
@@ -171,11 +172,10 @@ async def reschedule(
                 update_params = get_update_params(date_str, task.due)
 
                 if not dry_run:
-                    update_task = build_retry(
-                        partial(api.update_task, task_id=task.id, **update_params)
+                    update_task_with_retry = build_retry(
+                        lambda: api.update_task(task_id=task.id, **update_params)
                     )
-
-                    result = create_task(update_task())
+                    result = create_task(update_task_with_retry())
                     coroutines.add(result)
 
     # Wait to finish so that the program doesn't exit early
