@@ -1,4 +1,4 @@
-from typing import NotRequired, Protocol, TypedDict
+from typing import NotRequired, Protocol, TypedDict, Unpack
 from unittest.mock import AsyncMock
 
 from requests import HTTPError, Session
@@ -31,8 +31,10 @@ class UpdateTaskInput(TypedDict):
 
 
 class TodoistAPIProtocol(Protocol):
-    async def get_tasks(self, **kwargs: GetTasksInput) -> list[Task]: ...
-    async def update_task(self, task_id: str, **kwargs: UpdateTaskInput) -> bool: ...
+    async def get_tasks(self, **kwargs: Unpack[GetTasksInput]) -> list[Task]: ...
+    async def update_task(
+        self, task_id: str, **kwargs: Unpack[UpdateTaskInput]
+    ) -> bool: ...
 
 
 class FakeTodoistAPI:
