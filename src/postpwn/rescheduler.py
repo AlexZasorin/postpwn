@@ -155,7 +155,7 @@ async def reschedule(
         weight = get_weekday_weight(max_weight, reschedule_date)
         next_batch = fill_my_sack(weight, weighted_tasks)
 
-        new_schedule[str(curr_date)].extend(next_batch)
+        new_schedule[str(reschedule_date)].extend(next_batch)
         weighted_tasks = [task for task in weighted_tasks if task not in next_batch]
 
         reschedule_date += timedelta(days=1)
