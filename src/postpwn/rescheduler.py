@@ -157,6 +157,8 @@ async def reschedule(
         new_schedule[str(reschedule_date)].extend(next_batch)
         weighted_tasks = [task for task in weighted_tasks if task not in next_batch]
 
+        logger.info(f"new_schedule: {new_schedule}")
+        logger.info(f"weighted_tasks: {weighted_tasks}")
         reschedule_date += timedelta(days=1)
 
     # We need to keep track of (async)tasks so they don't get garbage collected? lol
