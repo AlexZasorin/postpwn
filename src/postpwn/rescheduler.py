@@ -169,7 +169,7 @@ async def reschedule(
                 )
 
                 update_params = get_update_params(date_str, task.due)
-
+                logger.info(f"Update params: {update_params}")
                 if not dry_run:
                     update_task_with_retry = build_retry(
                         lambda: api.update_task(task_id=task.id, **update_params)
