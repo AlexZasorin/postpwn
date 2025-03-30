@@ -94,23 +94,17 @@ def get_weekday_weight(weight_config: WeightConfig | int, date: date) -> int:
     if isinstance(weight_config, int):
         return weight_config
 
-    match date.weekday():
-        case 0:
-            return weight_config.monday
-        case 1:
-            return weight_config.tuesday
-        case 2:
-            return weight_config.wednesday
-        case 3:
-            return weight_config.thursday
-        case 4:
-            return weight_config.friday
-        case 5:
-            return weight_config.saturday
-        case 6:
-            return weight_config.sunday
-        case _:
-            return 0
+    weekday_mapping = [
+        weight_config.monday,
+        weight_config.tuesday,
+        weight_config.wednesday,
+        weight_config.thursday,
+        weight_config.friday,
+        weight_config.saturday,
+        weight_config.sunday,
+    ]
+
+    return weekday_mapping[date.weekday()]
 
 
 def build_retry(fn: WrappedFn) -> WrappedFn:
