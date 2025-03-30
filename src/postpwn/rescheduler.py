@@ -8,6 +8,7 @@ from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
+from requests import RequestException
 from todoist_api_python.models import Due, Task
 
 from postpwn.api import TodoistAPIProtocol, UpdateTaskInput
@@ -19,6 +20,7 @@ from tenacity import (
     after_log,
     before_log,
     retry,
+    retry_if_exception_type,
     stop_after_attempt,
     wait_exponential_jitter,
 )
@@ -110,8 +112,11 @@ def get_weekday_weight(weight_config: WeightConfig | int, date: date) -> int:
 def build_retry(fn: WrappedFn) -> WrappedFn:
     return retry(
         reraise=True,
-        wait=wait_exponential_jitter(max=120),
-        stop=stop_after_attempt(int(os.getenv("RETRY_ATTEMPTS", 3))),
+        wait=wait_exponential_jitter(initial=1, max=120, jitter=0.1),
+        stop=stop_after_attempt(int(os.getenv("RETRY_ATTEMPTS", "3"))),
+        retry=retry_if_exception_type(
+            (ConnectionError, TimeoutError, RequestException)
+        ),
         before=before_log(logger, logging.DEBUG),
         after=after_log(logger, logging.DEBUG),
     )(fn)
