@@ -8,7 +8,7 @@ from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
-from requests import RequestException
+from requests import HTTPError, RequestException
 from todoist_api_python.models import Due, Task
 
 from postpwn.api import TodoistAPIProtocol, UpdateTaskInput
@@ -115,7 +115,7 @@ def build_retry(fn: WrappedFn) -> WrappedFn:
         wait=wait_exponential_jitter(initial=1, max=120, jitter=0.1),
         stop=stop_after_attempt(int(os.getenv("RETRY_ATTEMPTS", "3"))),
         retry=retry_if_exception_type(
-            (ConnectionError, TimeoutError, RequestException)
+            (ConnectionError, TimeoutError, RequestException, HTTPError)
         ),
         before=before_log(logger, logging.DEBUG),
         after=after_log(logger, logging.DEBUG),
