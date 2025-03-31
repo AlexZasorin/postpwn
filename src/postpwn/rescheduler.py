@@ -25,8 +25,8 @@ from tenacity import (
 
 _ = load_dotenv()
 
+logger = logging.getLogger("postpwn")
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
-logger = logging.getLogger(__name__)
 
 
 def weighted_adapter(task: Task, rules: list[Rule] | None) -> WeightedTask | None:
