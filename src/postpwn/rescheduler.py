@@ -8,7 +8,6 @@ from datetime import date, datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
-from requests import HTTPError, RequestException
 from todoist_api_python.models import Due, Task
 
 from postpwn.api import TodoistAPIProtocol, UpdateTaskInput
@@ -20,7 +19,6 @@ from tenacity import (
     after_log,
     before_log,
     retry,
-    retry_if_exception_type,
     stop_after_attempt,
     wait_exponential_jitter,
 )
