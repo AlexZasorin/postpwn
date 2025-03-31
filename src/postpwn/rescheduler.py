@@ -112,13 +112,10 @@ def get_weekday_weight(weight_config: WeightConfig | int, date: date) -> int:
 def build_retry(fn: WrappedFn) -> WrappedFn:
     return retry(
         reraise=True,
-        wait=wait_exponential_jitter(initial=1, max=120, jitter=0.1),
+        wait=wait_exponential_jitter(max=120),
         stop=stop_after_attempt(int(os.getenv("RETRY_ATTEMPTS", "3"))),
-        retry=retry_if_exception_type(
-            (ConnectionError, TimeoutError, RequestException, HTTPError)
-        ),
-        before=before_log(logger, logging.DEBUG),
-        after=after_log(logger, logging.DEBUG),
+        before=before_log(logger, logging.INFO),
+        after=after_log(logger, logging.INFO),
     )(fn)
 
 
