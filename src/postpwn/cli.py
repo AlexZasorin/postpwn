@@ -23,8 +23,10 @@ from postpwn.types import Rule, ScheduleConfig, WeightConfig
 
 _ = load_dotenv()
 
+logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
+
 logger = logging.getLogger("postpwn")
-logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+logger.setLevel(logging.DEBUG)
 
 
 class RescheduleParams(TypedDict):

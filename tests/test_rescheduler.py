@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import sys
 from datetime import datetime
 from typing import Generator
 
@@ -27,7 +26,7 @@ from postpwn.testing.set_env import set_env
 # TODO: How to treat items with overlapping labels?
 
 logger = logging.getLogger("postpwn")
-logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+logger.setLevel(logging.DEBUG)
 
 
 @pytest.fixture
