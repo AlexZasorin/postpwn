@@ -1,19 +1,14 @@
 import logging
 import os
 import sys
-
-from asyncio import Task as AsyncTask, create_task
+from asyncio import Task as AsyncTask
+from asyncio import create_task
 from collections import defaultdict
 from datetime import date, datetime, timedelta
+from typing import Unpack
 from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
-from todoist_api_python.models import Due, Task
-
-from postpwn.api import TodoistAPIProtocol, UpdateTaskInput
-from postpwn.types import Rule, WeightConfig
-from postpwn.weighted_task import WeightedTask
-
 from tenacity import (
     WrappedFn,
     after_log,
@@ -22,6 +17,11 @@ from tenacity import (
     stop_after_attempt,
     wait_exponential_jitter,
 )
+from todoist_api_python.models import Due, Task
+
+from postpwn.api import TodoistAPIProtocol, UpdateTaskInput
+from postpwn.types import Rule, WeightConfig
+from postpwn.weighted_task import WeightedTask
 
 _ = load_dotenv()
 
@@ -109,18 +109,24 @@ def get_weekday_weight(weight_config: WeightConfig | int, date: date) -> int:
     return weekday_mapping[date.weekday()]
 
 
-def build_retry(fn: WrappedFn) -> WrappedFn:
+async def get_tasks(api: TodoistAPIProtocol, filter: str) -> list[Task]:
+    return await api.get_tasks(filter=filter)
+
+
+async def update_task(
+    api: TodoistAPIProtocol, task_id: str, **update_params: Unpack[UpdateTaskInput]
+):
+    return await api.update_task(task_id, **update_params)
+
+
+def build_retry(func: WrappedFn) -> WrappedFn:
     return retry(
         reraise=True,
         wait=wait_exponential_jitter(max=120),
         stop=stop_after_attempt(int(os.getenv("RETRY_ATTEMPTS", "3"))),
         before=before_log(logger, logging.INFO),
         after=after_log(logger, logging.INFO),
-    )(fn)
-
-
-async def get_tasks_with_retry(api: TodoistAPIProtocol, filter: str) -> list[Task]:
-    return await build_retry(lambda: api.get_tasks(filter=filter))()
+    )(func)
 
 
 async def reschedule(
@@ -132,6 +138,8 @@ async def reschedule(
     rules: list[Rule] | None = None,
     dry_run: bool = False,
 ) -> None:
+    get_tasks_with_retry = build_retry(get_tasks)
+
     tasks = await get_tasks_with_retry(api, filter)
 
     # Add weights based on rules
@@ -166,10 +174,11 @@ async def reschedule(
 
                 update_params = get_update_params(date_str, task.due)
                 if not dry_run:
-                    update_task_with_retry = build_retry(
-                        lambda: api.update_task(task_id=task.id, **update_params)
+                    update_task_with_retry = build_retry(update_task)
+
+                    result = create_task(
+                        update_task_with_retry(api, task.id, **update_params)
                     )
-                    result = create_task(update_task_with_retry())
                     coroutines.add(result)
 
     # Wait to finish so that the program doesn't exit early
