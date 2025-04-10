@@ -1,11 +1,10 @@
+import asyncio
 import logging
 import os
 import sys
-from asyncio import Task as AsyncTask
-from asyncio import create_task
 from collections import defaultdict
 from datetime import date, datetime, timedelta
-from typing import Unpack
+from typing import Any, Coroutine, Unpack
 from zoneinfo import ZoneInfo
 
 from dotenv import load_dotenv
@@ -35,18 +34,18 @@ def weighted_adapter(task: Task, rules: list[Rule] | None) -> WeightedTask | Non
     if rules is None:
         return WeightedTask(task, 0)
 
-    filter_map = {
+    filter_map: dict[str, int] = {
         rule["filter"][1:]: rule["weight"] for rule in rules if "weight" in rule
     }
 
     if not task.labels:
         logger.info("Task has no labels, ignoring...")
-        return
+        return None
 
     label = next((label for label in task.labels if label in filter_map), None)
     if not label:
         logger.info("Task has no matching labels, ignoring...")
-        return
+        return None
 
     weight = filter_map[label]
 
@@ -58,7 +57,7 @@ def fill_my_sack(
     tasks: list[WeightedTask],
 ) -> list[WeightedTask]:
     values = [0 for _ in range(max_weight + 1)]
-    selected: list[list[WeightedTask]] = [list() for _ in range(max_weight + 1)]
+    selected: list[list[WeightedTask]] = [[] for _ in range(max_weight + 1)]
 
     for task in tasks:
         for curr_capacity in range(max_weight, 0, -1):
@@ -163,8 +162,7 @@ async def reschedule(
 
         reschedule_date += timedelta(days=1)
 
-    # We need to keep track of (async)tasks so they don't get garbage collected? lol
-    coroutines: set[AsyncTask[bool]] = set()
+    update_coroutines: list[Coroutine[Any, Any, bool]] = []
     for date_str, weighted_tasks in new_schedule.items():
         for task in weighted_tasks:
             if task.due and task.due.date != date_str:
@@ -175,12 +173,10 @@ async def reschedule(
                 update_params = get_update_params(date_str, task.due)
                 if not dry_run:
                     update_task_with_retry = build_retry(update_task)
-
-                    result = create_task(
+                    update_coroutines.append(
                         update_task_with_retry(api, task.id, **update_params)
                     )
-                    coroutines.add(result)
 
-    # Wait to finish so that the program doesn't exit early
-    for coroutine in coroutines:
-        await coroutine
+    # Wait for all update tasks to complete
+    if update_coroutines:
+        await asyncio.gather(*update_coroutines)
