@@ -5,16 +5,16 @@ from faker import Faker
 from todoist_api_python.models import Due, Duration, Task
 
 
-def id_fixture() -> str:
+def generate_id() -> str:
     fake = Faker()
     return fake.uuid4()
 
 
-def int_fixture(min_val: int = 1, max_val: int = 100) -> int:
+def generate_int(min_val: int = 1, max_val: int = 100) -> int:
     return random.randint(min_val, max_val)
 
 
-def text_fixture(words: int = 10, ext_word_list: list[str] | None = None) -> str:
+def generate_text(words: int = 10, ext_word_list: list[str] | None = None) -> str:
     fake = Faker()
 
     generated_words = fake.words(words, ext_word_list=ext_word_list)
@@ -22,33 +22,33 @@ def text_fixture(words: int = 10, ext_word_list: list[str] | None = None) -> str
     return " ".join(generated_words)
 
 
-def datetime_fixture(before_now: bool = True, after_now: bool = False) -> str:
+def generate_datetime(before_now: bool = True, after_now: bool = False) -> str:
     fake = Faker()
     return str(fake.date_time_this_month(before_now=before_now, after_now=after_now))
 
 
-def date_fixture() -> str:
+def generate_date() -> str:
     fake = Faker()
     return str(fake.date_this_month(before_today=False, after_today=True))
 
 
-def timezone_fixture() -> str:
+def generate_timezone() -> str:
     fake = Faker()
     return fake.timezone()
 
 
-def url_fixture() -> str:
+def generate_url() -> str:
     fake = Faker()
     return fake.url()
 
 
-def due(properties: Optional[Due] = None) -> Due:
+def get_due(properties: Optional[Due] = None) -> Due:
     defaults = Due(
-        date=datetime_fixture(),
+        date=generate_datetime(),
         is_recurring=False,
-        datetime=datetime_fixture(before_now=False, after_now=True),
-        string=text_fixture(),
-        timezone=timezone_fixture(),
+        datetime=generate_datetime(before_now=False, after_now=True),
+        string=generate_text(),
+        timezone=generate_timezone(),
     )
 
     if properties is None:
@@ -62,12 +62,12 @@ def due(properties: Optional[Due] = None) -> Due:
     )
 
 
-def duration(properties: dict[str, Any] | None = None) -> Duration:
+def get_duration(properties: dict[str, Any] | None = None) -> Duration:
     defaults = Duration(
-        amount=int_fixture(),
+        amount=generate_int(),
         # TODO: Create a separate fixture for generating random string literals
         # instead of using text fixture
-        unit=text_fixture(words=1, ext_word_list=["minute", "day"]),
+        unit=generate_text(words=1, ext_word_list=["minute", "day"]),
     )
 
     if properties is None:
@@ -81,26 +81,26 @@ def duration(properties: dict[str, Any] | None = None) -> Duration:
     )
 
 
-def task(properties: Optional[dict[str, Any]] = None) -> Task:
+def get_task(properties: Optional[dict[str, Any]] = None) -> Task:
     defaults = Task(
-        assignee_id=id_fixture(),
-        assigner_id=id_fixture(),
-        comment_count=int_fixture(),
+        assignee_id=generate_id(),
+        assigner_id=generate_id(),
+        comment_count=generate_int(),
         is_completed=False,
-        content=text_fixture(),
-        created_at=datetime_fixture(),
-        creator_id=id_fixture(),
-        description=text_fixture(),
-        due=due(),
-        id=id_fixture(),
-        labels=[text_fixture(words=1) for _ in range(3)],
-        order=int_fixture(),
-        parent_id=id_fixture(),
+        content=generate_text(),
+        created_at=generate_datetime(),
+        creator_id=generate_id(),
+        description=generate_text(),
+        due=get_due(),
+        id=generate_id(),
+        labels=[generate_text(words=1) for _ in range(3)],
+        order=generate_int(),
+        parent_id=generate_id(),
         priority=1,
-        project_id=id_fixture(),
-        section_id=id_fixture(),
-        url=url_fixture(),
-        duration=duration(),
+        project_id=generate_id(),
+        section_id=generate_id(),
+        url=generate_url(),
+        duration=get_duration(),
     )
 
     if properties is None:
