@@ -2,7 +2,6 @@ import asyncio
 import logging
 from asyncio import AbstractEventLoop
 from datetime import datetime
-from typing import Generator
 
 import pytest
 from requests import HTTPError
@@ -28,13 +27,6 @@ from helpers.set_env import set_env
 
 logger = logging.getLogger("postpwn")
 logger.setLevel(logging.DEBUG)
-
-
-@pytest.fixture
-def event_loop() -> Generator[AbstractEventLoop, None, None]:
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
 
 
 class TestPostpwn:

@@ -1,47 +1,28 @@
-import random
-from typing import Any, Optional
+import asyncio
+from asyncio import AbstractEventLoop
+from typing import Any, Generator, Optional
 
-from faker import Faker
+import pytest
 from todoist_api_python.models import Due, Duration, Task
 
-
-def generate_id() -> str:
-    fake = Faker()
-    return fake.uuid4()
-
-
-def generate_int(min_val: int = 1, max_val: int = 100) -> int:
-    return random.randint(min_val, max_val)
-
-
-def generate_text(words: int = 10, ext_word_list: list[str] | None = None) -> str:
-    fake = Faker()
-
-    generated_words = fake.words(words, ext_word_list=ext_word_list)
-
-    return " ".join(generated_words)
+from helpers.data_generators import (
+    generate_datetime,
+    generate_id,
+    generate_int,
+    generate_text,
+    generate_timezone,
+    generate_url,
+)
 
 
-def generate_datetime(before_now: bool = True, after_now: bool = False) -> str:
-    fake = Faker()
-    return str(fake.date_time_this_month(before_now=before_now, after_now=after_now))
+@pytest.fixture
+def event_loop() -> Generator[AbstractEventLoop, None, None]:
+    loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
 
 
-def generate_date() -> str:
-    fake = Faker()
-    return str(fake.date_this_month(before_today=False, after_today=True))
-
-
-def generate_timezone() -> str:
-    fake = Faker()
-    return fake.timezone()
-
-
-def generate_url() -> str:
-    fake = Faker()
-    return fake.url()
-
-
+@pytest.fixture
 def get_due(properties: Optional[Due] = None) -> Due:
     defaults = Due(
         date=generate_datetime(),
@@ -62,6 +43,7 @@ def get_due(properties: Optional[Due] = None) -> Due:
     )
 
 
+@pytest.fixture
 def get_duration(properties: dict[str, Any] | None = None) -> Duration:
     defaults = Duration(
         amount=generate_int(),
@@ -81,6 +63,7 @@ def get_duration(properties: dict[str, Any] | None = None) -> Duration:
     )
 
 
+@pytest.fixture
 def get_task(properties: Optional[dict[str, Any]] = None) -> Task:
     defaults = Task(
         assignee_id=generate_id(),
