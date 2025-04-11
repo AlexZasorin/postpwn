@@ -29,67 +29,67 @@ logger = logging.getLogger("postpwn")
 logger.setLevel(logging.DEBUG)
 
 
-class TestPostpwn:
-    def test_no_token_provided(self, event_loop: AbstractEventLoop) -> None:
-        """raises an error when no token is provided"""
+def test_no_token_provided(event_loop: AbstractEventLoop) -> None:
+    """it raises an error"""
 
-        kwargs: RescheduleParams = {
-            "token": None,
-            "filter": "label:test",
-            "rules": None,
-            "dry_run": True,
-            "time_zone": "UTC",
-            "schedule": None,
-        }
+    kwargs: RescheduleParams = {
+        "token": None,
+        "filter": "label:test",
+        "rules": None,
+        "dry_run": True,
+        "time_zone": "UTC",
+        "schedule": None,
+    }
 
-        fake_api = FakeTodoistAPI("")
+    fake_api = FakeTodoistAPI("")
 
-        curr_date = datetime(2022, 1, 1).date()
+    curr_date = datetime(2022, 1, 1).date()
 
-        with set_env({"RETRY_ATTEMPTS": "1"}):
-            with pytest.raises(HTTPError):
-                postpwn(fake_api, event_loop, curr_date, **kwargs)
-
-    def test_no_filter_provided(self, event_loop: AbstractEventLoop) -> None:
-        """does nothing when no filter is provided"""
-        kwargs: RescheduleParams = {
-            "token": "VALID_TOKEN",
-            "filter": "",
-            "rules": None,
-            "dry_run": False,
-            "time_zone": "UTC",
-            "schedule": None,
-        }
-
-        fake_api = FakeTodoistAPI("VALID_TOKEN")
-
-        curr_date = datetime(2025, 1, 1).date()
-
-        with set_env({"RETRY_ATTEMPTS": "1"}):
+    with set_env({"RETRY_ATTEMPTS": "1"}):
+        with pytest.raises(HTTPError):
             postpwn(fake_api, event_loop, curr_date, **kwargs)
 
-        assert fake_api.update_task.call_count == 0
 
-    def test_no_rules_provided(self, event_loop: asyncio.AbstractEventLoop) -> None:
-        """reschedules all tasks to the current day when no rules are provided"""
-        kwargs: RescheduleParams = {
-            "token": "VALID_TOKEN",
-            "filter": "label:test",
-            "rules": None,
-            "dry_run": False,
-            "time_zone": "UTC",
-            "schedule": None,
-        }
+def test_no_filter_provided(event_loop: AbstractEventLoop) -> None:
+    """it does nothing"""
+    kwargs: RescheduleParams = {
+        "token": "VALID_TOKEN",
+        "filter": "",
+        "rules": None,
+        "dry_run": False,
+        "time_zone": "UTC",
+        "schedule": None,
+    }
 
-        fake_api = FakeTodoistAPI("VALID_TOKEN")
+    fake_api = FakeTodoistAPI("VALID_TOKEN")
 
-        curr_date = datetime(2025, 1, 1).date()
+    curr_date = datetime(2025, 1, 1).date()
 
-        with set_env({"RETRY_ATTEMPTS": "1"}):
-            postpwn(fake_api, event_loop, curr_date, **kwargs)
+    with set_env({"RETRY_ATTEMPTS": "1"}):
+        postpwn(fake_api, event_loop, curr_date, **kwargs)
 
-        assert fake_api.update_task.call_count == 1
-        assert (
-            fake_api.update_task.call_args.kwargs["due_datetime"]
-            == "2025-01-01T12:00:00"
-        )
+    assert fake_api.update_task.call_count == 0
+
+
+def test_no_rules_provided(event_loop: asyncio.AbstractEventLoop) -> None:
+    """it reschedules all tasks to the current day"""
+    kwargs: RescheduleParams = {
+        "token": "VALID_TOKEN",
+        "filter": "label:test",
+        "rules": None,
+        "dry_run": False,
+        "time_zone": "UTC",
+        "schedule": None,
+    }
+
+    fake_api = FakeTodoistAPI("VALID_TOKEN")
+
+    curr_date = datetime(2025, 1, 1).date()
+
+    with set_env({"RETRY_ATTEMPTS": "1"}):
+        postpwn(fake_api, event_loop, curr_date, **kwargs)
+
+    assert fake_api.update_task.call_count == 1
+    assert (
+        fake_api.update_task.call_args.kwargs["due_datetime"] == "2025-01-01T12:00:00"
+    )
