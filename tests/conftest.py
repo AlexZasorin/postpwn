@@ -1,6 +1,6 @@
 import asyncio
 from asyncio import AbstractEventLoop
-from typing import Any, Generator, Optional
+from typing import Generator, Optional
 
 import pytest
 from todoist_api_python.models import Due, Duration, Task
@@ -23,7 +23,7 @@ def event_loop() -> Generator[AbstractEventLoop, None, None]:
 
 
 @pytest.fixture
-def get_due(properties: Optional[Due] = None) -> Due:
+def due(properties: Optional[Due] = None) -> Due:
     defaults = Due(
         date=generate_datetime(),
         is_recurring=False,
@@ -44,7 +44,7 @@ def get_due(properties: Optional[Due] = None) -> Due:
 
 
 @pytest.fixture
-def get_duration(properties: dict[str, Any] | None = None) -> Duration:
+def duration(properties: Optional[Duration] = None) -> Duration:
     defaults = Duration(
         amount=generate_int(),
         # TODO: Create a separate fixture for generating random string literals
@@ -64,7 +64,7 @@ def get_duration(properties: dict[str, Any] | None = None) -> Duration:
 
 
 @pytest.fixture
-def get_task(properties: Optional[dict[str, Any]] = None) -> Task:
+def task(properties: Optional[Task] = None) -> Task:
     defaults = Task(
         assignee_id=generate_id(),
         assigner_id=generate_id(),
@@ -74,7 +74,7 @@ def get_task(properties: Optional[dict[str, Any]] = None) -> Task:
         created_at=generate_datetime(),
         creator_id=generate_id(),
         description=generate_text(),
-        due=get_due(),
+        due=due(),
         id=generate_id(),
         labels=[generate_text(words=1) for _ in range(3)],
         order=generate_int(),
@@ -83,7 +83,7 @@ def get_task(properties: Optional[dict[str, Any]] = None) -> Task:
         project_id=generate_id(),
         section_id=generate_id(),
         url=generate_url(),
-        duration=get_duration(),
+        duration=duration(),
     )
 
     if properties is None:
@@ -91,7 +91,7 @@ def get_task(properties: Optional[dict[str, Any]] = None) -> Task:
 
     return Task(
         **{
-            field: properties.get(field) or getattr(defaults, field)
+            field: getattr(properties, field) or getattr(defaults, field)
             for field in defaults.__dict__
         }
     )
