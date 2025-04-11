@@ -30,7 +30,7 @@ logger.setLevel(logging.DEBUG)
 
 
 def test_no_token_provided(event_loop: AbstractEventLoop) -> None:
-    """it raises an error"""
+    """when no token is provided, it raises an error"""
 
     kwargs: RescheduleParams = {
         "token": None,
@@ -51,7 +51,7 @@ def test_no_token_provided(event_loop: AbstractEventLoop) -> None:
 
 
 def test_no_filter_provided(event_loop: AbstractEventLoop) -> None:
-    """it does nothing"""
+    """when no filter is provided, it does nothing"""
     kwargs: RescheduleParams = {
         "token": "VALID_TOKEN",
         "filter": "",
@@ -72,7 +72,7 @@ def test_no_filter_provided(event_loop: AbstractEventLoop) -> None:
 
 
 def test_no_rules_provided(event_loop: asyncio.AbstractEventLoop) -> None:
-    """it reschedules all tasks to the current day"""
+    """when no rules are provided, it reschedules all tasks to the current day"""
     kwargs: RescheduleParams = {
         "token": "VALID_TOKEN",
         "filter": "label:test",

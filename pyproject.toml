@@ -38,5 +38,5 @@ typeCheckingMode = "strict"
 
 [tool.pytest.ini_options]
 addopts = "--spec"
-spec_test_format = "{result} When {name} {docstring_summary}"
+spec_test_format = "{result} {docstring_summary}"
 log_cli = true
