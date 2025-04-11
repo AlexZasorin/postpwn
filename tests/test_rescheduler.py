@@ -1,15 +1,16 @@
 import asyncio
 import logging
+from asyncio import AbstractEventLoop
 from datetime import datetime
 from typing import Generator
 
 import pytest
-from asyncio import AbstractEventLoop
 from requests import HTTPError
 
 from postpwn.api import FakeTodoistAPI
 from postpwn.cli import RescheduleParams, postpwn
-from postpwn.testing.set_env import set_env
+
+from .helpers.set_env import set_env
 
 # TODO: Tests to make:
 # [X] When no token is provided, an error should be raised
