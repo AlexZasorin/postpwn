@@ -1,10 +1,8 @@
 import asyncio
 from asyncio import AbstractEventLoop
-from typing import Generator, Optional
+from typing import Any, Generator, Optional
 
 import pytest
-from todoist_api_python.models import Due, Duration, Task
-
 from helpers.data_generators import (
     generate_datetime,
     generate_id,
@@ -13,6 +11,7 @@ from helpers.data_generators import (
     generate_timezone,
     generate_url,
 )
+from todoist_api_python.models import Due, Duration, Task
 
 
 @pytest.fixture
@@ -23,7 +22,7 @@ def event_loop() -> Generator[AbstractEventLoop, None, None]:
 
 
 @pytest.fixture
-def due(properties: Optional[Due] = None) -> Due:
+def due(properties: Optional[dict[str, Any]] = None) -> Due:
     defaults = Due(
         date=generate_datetime(),
         is_recurring=False,
@@ -44,7 +43,7 @@ def due(properties: Optional[Due] = None) -> Due:
 
 
 @pytest.fixture
-def duration(properties: Optional[Duration] = None) -> Duration:
+def duration(properties: Optional[dict[str, Any]] = None) -> Duration:
     defaults = Duration(
         amount=generate_int(),
         # TODO: Create a separate fixture for generating random string literals
@@ -64,7 +63,7 @@ def duration(properties: Optional[Duration] = None) -> Duration:
 
 
 @pytest.fixture
-def task(properties: Optional[Task] = None) -> Task:
+def task(properties: Optional[dict[str, Any]] = None) -> Task:
     defaults = Task(
         assignee_id=generate_id(),
         assigner_id=generate_id(),
