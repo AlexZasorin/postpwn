@@ -4,12 +4,12 @@ from asyncio import AbstractEventLoop
 from datetime import datetime
 
 import pytest
+from helpers.data_generators import build_task
+from helpers.set_env import set_env
 from requests import HTTPError
 
 from postpwn.api import FakeTodoistAPI
 from postpwn.cli import RescheduleParams, postpwn
-
-from helpers.set_env import set_env
 
 # TODO: Tests to make:
 # [X] When no token is provided, an error should be raised
@@ -52,6 +52,7 @@ def test_no_token_provided(event_loop: AbstractEventLoop) -> None:
 
 def test_no_filter_provided(event_loop: AbstractEventLoop) -> None:
     """when no filter is provided, it does nothing"""
+
     kwargs: RescheduleParams = {
         "token": "VALID_TOKEN",
         "filter": "",
@@ -73,6 +74,7 @@ def test_no_filter_provided(event_loop: AbstractEventLoop) -> None:
 
 def test_no_rules_provided(event_loop: asyncio.AbstractEventLoop) -> None:
     """when no rules are provided, it reschedules all tasks to the current day"""
+
     kwargs: RescheduleParams = {
         "token": "VALID_TOKEN",
         "filter": "label:test",
@@ -83,6 +85,9 @@ def test_no_rules_provided(event_loop: asyncio.AbstractEventLoop) -> None:
     }
 
     fake_api = FakeTodoistAPI("VALID_TOKEN")
+
+    task = build_task()
+    fake_api.setup_tasks([task])
 
     curr_date = datetime(2025, 1, 1).date()
 
