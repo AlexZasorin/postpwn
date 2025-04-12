@@ -62,7 +62,7 @@ def build_due(properties: Optional[dict[str, Any]] = None) -> Due:
 
     return Due(
         **{
-            field: getattr(properties, field) or getattr(defaults, field)
+            field: properties.get(field) or getattr(defaults, field)
             for field in defaults.__dict__
         }
     )
@@ -81,7 +81,7 @@ def build_duration(properties: Optional[dict[str, Any]] = None) -> Duration:
 
     return Duration(
         **{
-            field: getattr(properties, field) or getattr(defaults, field)
+            field: properties.get(field) or getattr(defaults, field)
             for field in defaults.__dict__
         }
     )
@@ -114,7 +114,7 @@ def build_task(properties: Optional[dict[str, Any]] = None) -> Task:
 
     return Task(
         **{
-            field: getattr(properties, field) or getattr(defaults, field)
+            field: properties.get(field) or getattr(defaults, field)
             for field in defaults.__dict__
         }
     )
