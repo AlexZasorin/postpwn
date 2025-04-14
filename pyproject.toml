@@ -40,3 +40,4 @@ typeCheckingMode = "strict"
 addopts = "--spec"
 spec_test_format = "{result} {docstring_summary}"
 log_cli = true
+log_cli_level = "INFO"
