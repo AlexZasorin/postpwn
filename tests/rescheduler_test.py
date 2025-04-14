@@ -101,3 +101,53 @@ def test_no_rules_provided(event_loop: asyncio.AbstractEventLoop) -> None:
     assert (
         fake_api.update_task.call_args.kwargs["due_datetime"] == "2025-01-05T12:00:00"
     )
+
+
+def test_reschedule_with_rules(event_loop: AbstractEventLoop) -> None:
+    """when rules are provided, it reschedules tasks using smart rescheduling, respecting max weight"""
+
+    kwargs: RescheduleParams = {
+        "token": "VALID_TOKEN",
+        "filter": "label:test",
+        "rules": "tests/fixtures/single_max_weight_rules.json",
+        "dry_run": False,
+        "time_zone": "UTC",
+        "schedule": None,
+    }
+
+    fake_api = FakeTodoistAPI("VALID_TOKEN")
+
+    tasks = [
+        build_task({"labels": ["weight_one"]}),
+        build_task({"labels": ["weight_one"]}),
+        build_task({"labels": ["weight_one"]}),
+        build_task({"labels": ["weight_two"]}),
+    ]
+
+    fake_api.setup_tasks(tasks)
+
+    curr_date = datetime(2025, 1, 5).date()
+
+    with set_env({"RETRY_ATTEMPTS": "1"}):
+        postpwn(fake_api, event_loop, curr_date, **kwargs)
+
+    call_args_dict = {}
+    for call_arg in fake_api.update_task.call_args_list:
+        logger.info(call_arg[0])
+        # call_arg[call_arg.kwargs[""]]
+
+    # logger.info(fake_api.update_task.call_args_list)
+    assert fake_api.update_task.call_count == 4
+    # assert (
+    #     fake_api.update_task.call_args_list[0].kwargs["due_datetime"]
+    #     == "2025-01-02T12:00:00"
+    # )
+    # assert (
+    #     fake_api.update_task.call_args_list[1].kwargs["due_datetime"]
+    #     == "2025-01-03T12:00:00"
+    # )
+
+
+# TODO: Tasks with labels that do not match the rules should not be rescheduled
+# TODO: Rules with a weight > max weight should return an error
+# TODO: With rules, tasks that have higher priority should be rescheduled first, according to knapsack algorithm

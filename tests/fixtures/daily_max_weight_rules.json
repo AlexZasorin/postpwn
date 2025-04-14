@@ -1,0 +1,15 @@
+{
+  "max_weight": {
+    "sunday": 0,
+    "monday": 1,
+    "tuesday": 2,
+    "wednesday": 3,
+    "thursday": 4,
+    "friday": 5,
+    "saturday": 6
+  },
+  "rules": [
+    { "filter": "label 1", "weight": 1 },
+    { "filter": "label 2", "weight": 3 }
+  ]
+}
