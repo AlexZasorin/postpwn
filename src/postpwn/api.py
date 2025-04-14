@@ -1,8 +1,10 @@
+import logging
+import sys
 from typing import NotRequired, Protocol, TypedDict, Unpack
 from unittest.mock import AsyncMock
 
 from requests import HTTPError, Session
-from todoist_api_python.models import Due, Duration, Task
+from todoist_api_python.models import Task
 
 
 class GetTasksInput(TypedDict):
@@ -30,6 +32,12 @@ class UpdateTaskInput(TypedDict):
     deadline_lang: NotRequired[str]
 
 
+logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
+
+logger = logging.getLogger("postpwn")
+logger.setLevel(logging.INFO)
+
+
 class TodoistAPIProtocol(Protocol):
     async def get_tasks(self, **kwargs: Unpack[GetTasksInput]) -> list[Task]: ...
     async def update_task(
@@ -41,6 +49,7 @@ class FakeTodoistAPI:
     def __init__(self, token: str, _: Session | None = None):
         self.token: str = token
         self.tasks: list[Task] = []
+        self.update_task = AsyncMock(return_value=True)
 
     def setup_tasks(self, tasks: list[Task]) -> None:
         self.tasks.extend(tasks)
@@ -53,5 +62,3 @@ class FakeTodoistAPI:
             return []
 
         return self.tasks
-
-    update_task = AsyncMock(return_value=True)
