@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import sys
 from asyncio import AbstractEventLoop
 from datetime import datetime
 
@@ -25,8 +26,10 @@ from postpwn.cli import RescheduleParams, postpwn
 
 # TODO: How to treat items with overlapping labels?
 
+logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
+
 logger = logging.getLogger("postpwn")
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 
 def test_no_token_provided(event_loop: AbstractEventLoop) -> None:
