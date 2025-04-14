@@ -92,12 +92,12 @@ def test_no_rules_provided(event_loop: asyncio.AbstractEventLoop) -> None:
     task = build_task()
     fake_api.setup_tasks([task])
 
-    curr_date = datetime(2025, 1, 1).date()
+    curr_date = datetime(2025, 1, 5).date()
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
         postpwn(fake_api, event_loop, curr_date, **kwargs)
 
     assert fake_api.update_task.call_count == 1
     assert (
-        fake_api.update_task.call_args.kwargs["due_datetime"] == "2025-01-01T12:00:00"
+        fake_api.update_task.call_args.kwargs["due_datetime"] == "2025-01-05T12:00:00"
     )
