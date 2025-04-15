@@ -9,7 +9,7 @@
     "saturday": 6
   },
   "rules": [
-    { "filter": "label 1", "weight": 1 },
-    { "filter": "label 2", "weight": 3 }
+    { "filter": "@weight_one", "weight": 1 },
+    { "filter": "@weight_two", "weight": 3 }
   ]
 }
