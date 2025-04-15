@@ -14,9 +14,9 @@ from postpwn.api import FakeTodoistAPI
 from postpwn.cli import RescheduleParams, postpwn
 
 # TODO: Tests to make:
-# E2E test this? - When time zone is specified, tasks should be rescheduled properly according to that time zone
-# Application should retry on failure
-# Passing in a valid cron string triggers rescheduling on that cron schedule
+# Hard - Test this as part of an E2E test? - When time zone is specified, tasks should be rescheduled properly according to that time zone
+# Medium/Hard - Application should retry on failure
+# Hard - Passing in a valid cron string triggers rescheduling on that cron schedule
 # Easy - Passing invalid cron string raises an error
 # Easy - Tasks with labels that do not match the rules should not be rescheduled
 # Easy - Rules with a weight > max weight should return an error
