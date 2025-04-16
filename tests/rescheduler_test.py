@@ -47,7 +47,30 @@ def test_no_token_provided(event_loop: AbstractEventLoop) -> None:
     curr_datetime = datetime(2022, 1, 5, 12, 0, 0)
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
-        with pytest.raises(HTTPError):
+        with pytest.raises(HTTPError, match="401 Client Error: Unauthorized for url"):
+            postpwn(fake_api, event_loop, curr_datetime.date(), **kwargs)
+
+
+def test_passing_invalid_cron_string_raises_error(
+    event_loop: AbstractEventLoop,
+) -> None:
+    """when an invalid cron string is provided, it raises an error"""
+
+    kwargs: RescheduleParams = {
+        "token": "VALID_TOKEN",
+        "filter": "",
+        "rules": None,
+        "dry_run": False,
+        "time_zone": "UTC",
+        "schedule": "invalid_cron_string",
+    }
+
+    fake_api = FakeTodoistAPI("VALID_TOKEN")
+
+    curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
+
+    with set_env({"RETRY_ATTEMPTS": "1"}):
+        with pytest.raises(ValueError, match="Invalid cron schedule."):
             postpwn(fake_api, event_loop, curr_datetime.date(), **kwargs)
 
 

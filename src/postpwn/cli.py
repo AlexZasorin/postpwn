@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import re
 import sys
 from asyncio import AbstractEventLoop
 from datetime import date, datetime
@@ -20,6 +21,7 @@ from todoist_api_python.api_async import TodoistAPIAsync
 from postpwn.api import TodoistAPIProtocol
 from postpwn.rescheduler import reschedule
 from postpwn.types import Rule, ScheduleConfig, WeightConfig
+from postpwn.validation import CRON_SCHEDULE_REGEX
 
 _ = load_dotenv()
 
@@ -147,6 +149,9 @@ def postpwn(
     logger.info(f"Rules: {rules}")
 
     if kwargs["schedule"]:
+        if not re.match(CRON_SCHEDULE_REGEX, kwargs["schedule"]):
+            raise ValueError("Invalid cron schedule.")
+
         schedule = loop.run_until_complete(
             run_schedule(
                 api=api,
