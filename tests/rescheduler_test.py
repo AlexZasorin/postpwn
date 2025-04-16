@@ -22,6 +22,7 @@ from postpwn.cli import RescheduleParams, postpwn
 
 # TODO: How to treat items with overlapping labels?
 
+
 logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
 
 logger = logging.getLogger("postpwn")
@@ -160,11 +161,6 @@ def test_reschedule_with_rules(event_loop: AbstractEventLoop) -> None:
 
         matching_task = next(t for t in tasks if t.id == task_id)
         task_label = (
-            "weight_one"
-            if matching_task.labels and "weight_one" in matching_task.labels
-            else "weight_two"
-        )
-        task_label = (
             next(label for label in matching_task.labels)
             if matching_task.labels
             else None
@@ -263,11 +259,6 @@ def test_reschedule_with_rules_and_daily_weight(event_loop: AbstractEventLoop):
         due_datetime = call.kwargs["due_datetime"]
 
         matching_task = next(t for t in tasks if t.id == task_id)
-        task_label = (
-            "weight_one"
-            if matching_task.labels and "weight_one" in matching_task.labels
-            else "weight_two"
-        )
         task_label = (
             next(label for label in matching_task.labels)
             if matching_task.labels
