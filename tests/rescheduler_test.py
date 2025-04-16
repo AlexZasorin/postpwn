@@ -44,11 +44,11 @@ def test_no_token_provided(event_loop: AbstractEventLoop) -> None:
 
     fake_api = FakeTodoistAPI("")
 
-    curr_date = datetime(2022, 1, 1).date()
+    curr_datetime = datetime(2022, 1, 5, 12, 0, 0)
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
         with pytest.raises(HTTPError):
-            postpwn(fake_api, event_loop, curr_date, **kwargs)
+            postpwn(fake_api, event_loop, curr_datetime.date(), **kwargs)
 
 
 def test_no_filter_provided(event_loop: AbstractEventLoop) -> None:
@@ -65,10 +65,10 @@ def test_no_filter_provided(event_loop: AbstractEventLoop) -> None:
 
     fake_api = FakeTodoistAPI("VALID_TOKEN")
 
-    curr_date = datetime(2025, 1, 1).date()
+    curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
-        postpwn(fake_api, event_loop, curr_date, **kwargs)
+        postpwn(fake_api, event_loop, curr_datetime.date(), **kwargs)
 
     assert fake_api.update_task.call_count == 0
 
@@ -90,10 +90,10 @@ def test_no_rules_provided(event_loop: asyncio.AbstractEventLoop) -> None:
     task = build_task()
     fake_api.setup_tasks([task])
 
-    curr_date = datetime(2025, 1, 5).date()
+    curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
-        postpwn(fake_api, event_loop, curr_date, **kwargs)
+        postpwn(fake_api, event_loop, curr_datetime.date(), **kwargs)
 
     assert fake_api.update_task.call_count == 1
     assert (
@@ -286,9 +286,9 @@ def test_dry_run_doesn_not_update_tasks(event_loop: AbstractEventLoop) -> None:
     task = build_task()
     fake_api.setup_tasks([task])
 
-    curr_date = datetime(2025, 1, 5).date()
+    curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
-        postpwn(fake_api, event_loop, curr_date, **kwargs)
+        postpwn(fake_api, event_loop, curr_datetime.date(), **kwargs)
 
     assert fake_api.update_task.call_count == 0
