@@ -14,13 +14,11 @@ from postpwn.api import FakeTodoistAPI
 from postpwn.cli import RescheduleParams, postpwn
 
 # TODO: Tests to make:
-# Hard - Test this as part of an E2E test? - When time zone is specified, tasks should be rescheduled properly according to that time zone
-# Medium/Hard - Application should retry on failure
-# Hard - Passing in a valid cron string triggers rescheduling on that cron schedule
-# Easy - Passing invalid cron string raises an error
-# Easy - Tasks with labels that do not match the rules should not be rescheduled
 # Easy - Rules with a weight > max weight should return an error
 # Medium - With rules, tasks that have higher priority should be rescheduled first, according to knapsack algorithm
+# Medium/Hard - Application should retry on failure
+# Hard - Passing in a valid cron string triggers rescheduling on that cron schedule
+# Hard - Test this as part of an E2E test? - When time zone is specified, tasks should be rescheduled properly according to that time zone
 
 # TODO: How to treat items with overlapping labels?
 
@@ -198,6 +196,34 @@ def test_reschedule_with_rules(event_loop: AbstractEventLoop) -> None:
         scheduled_dates[third_day].count("weight_one") == 0
         and scheduled_dates[third_day].count("weight_two") == 1
     )
+
+
+def test_no_matching_label(event_loop: asyncio.AbstractEventLoop) -> None:
+    """when tasks have no matching labels, they are not rescheduled"""
+
+    kwargs: RescheduleParams = {
+        "token": "VALID_TOKEN",
+        "filter": "label:test",
+        "rules": "tests/fixtures/single_max_weight_rules.json",
+        "dry_run": False,
+        "time_zone": "UTC",
+        "schedule": None,
+    }
+
+    fake_api = FakeTodoistAPI("VALID_TOKEN")
+
+    unlabeled_task = build_task()
+    labeled_task = build_task({"labels": ["weight_one"]})
+
+    fake_api.setup_tasks([unlabeled_task, labeled_task])
+
+    curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
+
+    with set_env({"RETRY_ATTEMPTS": "1"}):
+        postpwn(fake_api, event_loop, curr_datetime.date(), **kwargs)
+
+    assert fake_api.update_task.call_count == 1
+    assert fake_api.update_task.call_args.args[0] == labeled_task.id
 
 
 def test_reschedule_with_rules_and_daily_weight(event_loop: AbstractEventLoop):
