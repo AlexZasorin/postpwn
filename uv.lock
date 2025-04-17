@@ -204,7 +204,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.10.6" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
     { name = "tenacity", specifier = ">=9.0.0" },
-    { name = "todoist-api-python", specifier = ">=2.1.7" },
+    { name = "todoist-api-python", specifier = "==2.1.7" },
 ]
 
 [package.metadata.requires-dev]
