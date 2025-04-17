@@ -17,7 +17,7 @@ from postpwn.cli import RescheduleParams, postpwn
 # Easy - Rules with a weight > max weight should return an error
 # Medium - With rules, tasks that have higher priority should be rescheduled first, according to knapsack algorithm
 # Medium/Hard - Application should retry on failure
-# Hard - Passing in a valid cron string triggers rescheduling on that cron schedule
+# Hard - Passing in a valid cron string triggers rescheduling on that cron schedule and doesn't raise an error
 # Hard - Test this as part of an E2E test? - When time zone is specified, tasks should be rescheduled properly according to that time zone
 
 # TODO: How to treat items with overlapping labels?
