@@ -135,6 +135,8 @@ def postpwn(
     curr_date: date,
     **kwargs: Unpack[RescheduleParams],
 ) -> None:
+    today = curr_date.date() if isinstance(curr_date, datetime) else curr_date
+
     if kwargs["rules"] and os.path.exists(kwargs["rules"]):
         logger.info(f"Loading rules from {kwargs['rules']}")
         with open(kwargs["rules"]) as f:
@@ -175,7 +177,7 @@ def postpwn(
             api=api,
             max_weight=max_weight,
             time_zone=kwargs["time_zone"],
-            curr_date=curr_date,
+            curr_date=today,
             rules=rules,
             filter=kwargs["filter"],
             dry_run=kwargs["dry_run"],

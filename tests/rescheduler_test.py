@@ -47,7 +47,7 @@ def test_no_token_provided(event_loop: AbstractEventLoop) -> None:
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
         with pytest.raises(HTTPError, match="401 Client Error: Unauthorized for url"):
-            postpwn(fake_api, event_loop, curr_datetime.date(), **kwargs)
+            postpwn(fake_api, event_loop, curr_datetime, **kwargs)
 
 
 def test_passing_invalid_cron_string_raises_error(
@@ -70,7 +70,7 @@ def test_passing_invalid_cron_string_raises_error(
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
         with pytest.raises(ValueError, match="Invalid cron schedule."):
-            postpwn(fake_api, event_loop, curr_datetime.date(), **kwargs)
+            postpwn(fake_api, event_loop, curr_datetime, **kwargs)
 
 
 def test_no_filter_provided(event_loop: AbstractEventLoop) -> None:
@@ -90,7 +90,7 @@ def test_no_filter_provided(event_loop: AbstractEventLoop) -> None:
     curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
-        postpwn(fake_api, event_loop, curr_datetime.date(), **kwargs)
+        postpwn(fake_api, event_loop, curr_datetime, **kwargs)
 
     assert fake_api.update_task.call_count == 0
 
@@ -112,13 +112,13 @@ def test_no_rules_provided(event_loop: asyncio.AbstractEventLoop) -> None:
     task = build_task()
     fake_api.setup_tasks([task])
 
-    curr_datetime = datetime(2025, 1, 5, 0, 0, 0).date()
+    curr_date = datetime(2025, 1, 5, 0, 0, 0).date()
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
-        postpwn(fake_api, event_loop, curr_datetime, **kwargs)
+        postpwn(fake_api, event_loop, curr_date, **kwargs)
 
     assert fake_api.update_task.call_count == 1
-    assert fake_api.update_task.call_args.kwargs["due_date"] == curr_datetime
+    assert fake_api.update_task.call_args.kwargs["due_date"] == curr_date
 
 
 def test_datetime_is_preserved(event_loop: AbstractEventLoop) -> None:
@@ -171,7 +171,7 @@ def test_reschedule_with_rules(event_loop: AbstractEventLoop) -> None:
     curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
-        postpwn(fake_api, event_loop, curr_datetime.date(), **kwargs)
+        postpwn(fake_api, event_loop, curr_datetime, **kwargs)
 
     assert fake_api.update_task.call_count == 4
 
@@ -241,7 +241,7 @@ def test_no_matching_label(event_loop: asyncio.AbstractEventLoop) -> None:
     curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
-        postpwn(fake_api, event_loop, curr_datetime.date(), **kwargs)
+        postpwn(fake_api, event_loop, curr_datetime, **kwargs)
 
     assert fake_api.update_task.call_count == 1
     assert fake_api.update_task.call_args.args[0] == labeled_task.id
@@ -271,7 +271,7 @@ def test_reschedule_with_rules_and_daily_weight(event_loop: AbstractEventLoop):
     curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
-        postpwn(fake_api, event_loop, curr_datetime.date(), **kwargs)
+        postpwn(fake_api, event_loop, curr_datetime, **kwargs)
 
     assert fake_api.update_task.call_count == 5
 
@@ -355,6 +355,6 @@ def test_dry_run_doesn_not_update_tasks(event_loop: AbstractEventLoop) -> None:
     curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
-        postpwn(fake_api, event_loop, curr_datetime.date(), **kwargs)
+        postpwn(fake_api, event_loop, curr_datetime, **kwargs)
 
     assert fake_api.update_task.call_count == 0

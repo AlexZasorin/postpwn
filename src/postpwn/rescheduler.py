@@ -75,15 +75,15 @@ def fill_my_sack(
     return selected[max_weight]
 
 
-def get_update_params(date_str: date, due: Due) -> UpdateTaskInput:
+def get_update_params(new_date: date, due: Due) -> UpdateTaskInput:
     update_params: UpdateTaskInput = {}
 
     if isinstance(due.date, datetime):  # type:ignore[call-arg]
         time = datetime.strptime(str(due.date), "%Y-%m-%d %H:%M:%S").time()  # type:ignore[call-arg]
-        new_datetime = datetime.strptime(f"{str(date_str)} {time}", "%Y-%m-%d %H:%M:%S")
+        new_datetime = datetime.strptime(f"{new_date} {time}", "%Y-%m-%d %H:%M:%S")
         update_params["due_datetime"] = new_datetime
     else:
-        new_datetime = datetime.strptime(str(date_str), "%Y-%m-%d")
+        new_datetime = datetime.strptime(str(new_date), "%Y-%m-%d")
         update_params["due_date"] = new_datetime.date()
 
     if due.string:
@@ -172,16 +172,16 @@ async def reschedule(
         reschedule_date += timedelta(days=1)
 
     update_coroutines: list[Coroutine[Any, Any, Task]] = []
-    for date_str, weighted_tasks in new_schedule.items():
+    for new_date, weighted_tasks in new_schedule.items():
         for task in weighted_tasks:
             if task.due and (
-                (isinstance(task.due.date, date) and task.due.date != date_str)  # type:ignore[call-arg]
+                (isinstance(task.due.date, date) and task.due.date != new_date)  # type:ignore[call-arg]
                 or (
                     isinstance(task.due.date, datetime)  # type:ignore[call-arg]
-                    and task.due.date.date() != date_str  # type:ignore[call-arg]
+                    and task.due.date.date() != new_date  # type:ignore[call-arg]
                 )
             ):
-                update_params = get_update_params(date_str, task.due)
+                update_params = get_update_params(new_date, task.due)
 
                 logger.info(
                     f"Rescheduling {task.content} from {task.due.date} to {update_params['due_date'] if 'due_date' in update_params else update_params['due_datetime']}"  # type:ignore[call-arg]

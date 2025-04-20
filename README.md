@@ -122,6 +122,8 @@ capacity:
 - [x] Update deployment to use new scheme
 - [x] Add proper logging
 - [x] Add proper README
+- [ ] Use Session from requests to implement retry logic?
+- [x] Update to latest Todoist API
 - [ ] Add tests
   - [ ] Create pytest fixture for the reschedule params kwargs
   - [ ] Create pytest fixture for the Fake TodoistAPI
