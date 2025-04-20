@@ -28,17 +28,12 @@ logger = logging.getLogger("postpwn")
 logger.setLevel(logging.INFO)
 
 
-def test_no_token_provided(event_loop: AbstractEventLoop) -> None:
+def test_no_token_provided(
+    event_loop: AbstractEventLoop, reschedule_params: RescheduleParams
+) -> None:
     """when no token is provided, it raises an error"""
 
-    kwargs: RescheduleParams = {
-        "token": None,
-        "filter": "label:test",
-        "rules": None,
-        "dry_run": True,
-        "time_zone": "UTC",
-        "schedule": None,
-    }
+    reschedule_params["token"] = None
 
     fake_api = FakeTodoistAPI("")
 
@@ -46,22 +41,16 @@ def test_no_token_provided(event_loop: AbstractEventLoop) -> None:
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
         with pytest.raises(HTTPError, match="401 Client Error: Unauthorized for url"):
-            postpwn(fake_api, event_loop, curr_datetime, **kwargs)
+            postpwn(fake_api, event_loop, curr_datetime, **reschedule_params)
 
 
 def test_passing_invalid_cron_string_raises_error(
     event_loop: AbstractEventLoop,
+    reschedule_params: RescheduleParams,
 ) -> None:
     """when an invalid cron string is provided, it raises an error"""
 
-    kwargs: RescheduleParams = {
-        "token": "VALID_TOKEN",
-        "filter": "",
-        "rules": None,
-        "dry_run": False,
-        "time_zone": "UTC",
-        "schedule": "invalid_cron_string",
-    }
+    reschedule_params["schedule"] = "invalid_cron_string"
 
     fake_api = FakeTodoistAPI("VALID_TOKEN")
 
@@ -69,42 +58,30 @@ def test_passing_invalid_cron_string_raises_error(
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
         with pytest.raises(ValueError, match="Invalid cron schedule."):
-            postpwn(fake_api, event_loop, curr_datetime, **kwargs)
+            postpwn(fake_api, event_loop, curr_datetime, **reschedule_params)
 
 
-def test_no_filter_provided(event_loop: AbstractEventLoop) -> None:
+def test_no_filter_provided(
+    event_loop: AbstractEventLoop, reschedule_params: RescheduleParams
+) -> None:
     """when no filter is provided, it does nothing"""
 
-    kwargs: RescheduleParams = {
-        "token": "VALID_TOKEN",
-        "filter": "",
-        "rules": None,
-        "dry_run": False,
-        "time_zone": "UTC",
-        "schedule": None,
-    }
+    reschedule_params["filter"] = ""
 
     fake_api = FakeTodoistAPI("VALID_TOKEN")
 
     curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
-        postpwn(fake_api, event_loop, curr_datetime, **kwargs)
+        postpwn(fake_api, event_loop, curr_datetime, **reschedule_params)
 
     assert fake_api.update_task.call_count == 0
 
 
-def test_no_rules_provided(event_loop: asyncio.AbstractEventLoop) -> None:
+def test_no_rules_provided(
+    event_loop: asyncio.AbstractEventLoop, reschedule_params: RescheduleParams
+) -> None:
     """when no rules are provided, it reschedules all tasks to the current day"""
-
-    kwargs: RescheduleParams = {
-        "token": "VALID_TOKEN",
-        "filter": "label:test",
-        "rules": None,
-        "dry_run": False,
-        "time_zone": "UTC",
-        "schedule": None,
-    }
 
     fake_api = FakeTodoistAPI("VALID_TOKEN")
 
@@ -114,23 +91,16 @@ def test_no_rules_provided(event_loop: asyncio.AbstractEventLoop) -> None:
     curr_date = datetime(2025, 1, 5, 0, 0, 0).date()
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
-        postpwn(fake_api, event_loop, curr_date, **kwargs)
+        postpwn(fake_api, event_loop, curr_date, **reschedule_params)
 
     assert fake_api.update_task.call_count == 1
     assert fake_api.update_task.call_args.kwargs["due_date"] == curr_date
 
 
-def test_datetime_is_preserved(event_loop: AbstractEventLoop) -> None:
+def test_datetime_is_preserved(
+    event_loop: AbstractEventLoop, reschedule_params: RescheduleParams
+) -> None:
     """when a task has a datetime due date, the specific time is preserved"""
-
-    kwargs: RescheduleParams = {
-        "token": "VALID_TOKEN",
-        "filter": "label:test",
-        "rules": None,
-        "dry_run": False,
-        "time_zone": "UTC",
-        "schedule": None,
-    }
 
     fake_api = FakeTodoistAPI("VALID_TOKEN")
 
@@ -140,23 +110,18 @@ def test_datetime_is_preserved(event_loop: AbstractEventLoop) -> None:
     curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
-        postpwn(fake_api, event_loop, curr_date=curr_datetime, **kwargs)
+        postpwn(fake_api, event_loop, curr_date=curr_datetime, **reschedule_params)
 
     assert fake_api.update_task.call_count == 1
     assert fake_api.update_task.call_args.kwargs["due_datetime"] == curr_datetime
 
 
-def test_weight_exceeds_single_max_weight(event_loop: AbstractEventLoop) -> None:
+def test_weight_exceeds_single_max_weight(
+    event_loop: AbstractEventLoop, reschedule_params: RescheduleParams
+) -> None:
     """when a rule weight exceeds the singular max weight, it raises an error"""
 
-    kwargs: RescheduleParams = {
-        "token": "VALID_TOKEN",
-        "filter": "label:test",
-        "rules": "tests/fixtures/excessive_single_max_weight_rules.json",
-        "dry_run": False,
-        "time_zone": "UTC",
-        "schedule": None,
-    }
+    reschedule_params["rules"] = "tests/fixtures/excessive_single_max_weight_rules.json"
 
     fake_api = FakeTodoistAPI("VALID_TOKEN")
 
@@ -172,20 +137,15 @@ def test_weight_exceeds_single_max_weight(event_loop: AbstractEventLoop) -> None
             ValueError,
             match="Invalid rule config: @weight_two exceeds max weight 2",
         ):
-            postpwn(fake_api, event_loop, curr_datetime, **kwargs)
+            postpwn(fake_api, event_loop, curr_datetime, **reschedule_params)
 
 
-def test_weight_exceeds_daily_max_weight(event_loop: AbstractEventLoop) -> None:
+def test_weight_exceeds_daily_max_weight(
+    event_loop: AbstractEventLoop, reschedule_params: RescheduleParams
+) -> None:
     """when a rule exceeds one of the daily max weights, it raises an error"""
 
-    kwargs: RescheduleParams = {
-        "token": "VALID_TOKEN",
-        "filter": "label:test",
-        "rules": "tests/fixtures/excessive_daily_max_weight_rules.json",
-        "dry_run": False,
-        "time_zone": "UTC",
-        "schedule": None,
-    }
+    reschedule_params["rules"] = "tests/fixtures/excessive_daily_max_weight_rules.json"
 
     fake_api = FakeTodoistAPI("VALID_TOKEN")
 
@@ -201,20 +161,15 @@ def test_weight_exceeds_daily_max_weight(event_loop: AbstractEventLoop) -> None:
             ValueError,
             match="Invalid rule config: @weight_two exceeds max weight 6",
         ):
-            postpwn(fake_api, event_loop, curr_datetime, **kwargs)
+            postpwn(fake_api, event_loop, curr_datetime, **reschedule_params)
 
 
-def test_no_matching_label(event_loop: asyncio.AbstractEventLoop) -> None:
+def test_no_matching_label(
+    event_loop: asyncio.AbstractEventLoop, reschedule_params: RescheduleParams
+) -> None:
     """when tasks have no matching labels, they are not rescheduled"""
 
-    kwargs: RescheduleParams = {
-        "token": "VALID_TOKEN",
-        "filter": "label:test",
-        "rules": "tests/fixtures/single_max_weight_rules.json",
-        "dry_run": False,
-        "time_zone": "UTC",
-        "schedule": None,
-    }
+    reschedule_params["rules"] = "tests/fixtures/single_max_weight_rules.json"
 
     fake_api = FakeTodoistAPI("VALID_TOKEN")
 
@@ -226,23 +181,18 @@ def test_no_matching_label(event_loop: asyncio.AbstractEventLoop) -> None:
     curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
-        postpwn(fake_api, event_loop, curr_datetime, **kwargs)
+        postpwn(fake_api, event_loop, curr_datetime, **reschedule_params)
 
     assert fake_api.update_task.call_count == 1
     assert fake_api.update_task.call_args.args[0] == labeled_task.id
 
 
-def test_reschedule_with_rules(event_loop: AbstractEventLoop) -> None:
+def test_reschedule_with_rules(
+    event_loop: AbstractEventLoop, reschedule_params: RescheduleParams
+) -> None:
     """when rules are provided, it reschedules tasks using smart rescheduling, respecting max weight"""
 
-    kwargs: RescheduleParams = {
-        "token": "VALID_TOKEN",
-        "filter": "label:test",
-        "rules": "tests/fixtures/single_max_weight_rules.json",
-        "dry_run": False,
-        "time_zone": "UTC",
-        "schedule": None,
-    }
+    reschedule_params["rules"] = "tests/fixtures/single_max_weight_rules.json"
 
     fake_api = FakeTodoistAPI("VALID_TOKEN")
 
@@ -256,7 +206,7 @@ def test_reschedule_with_rules(event_loop: AbstractEventLoop) -> None:
     curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
-        postpwn(fake_api, event_loop, curr_datetime, **kwargs)
+        postpwn(fake_api, event_loop, curr_datetime, **reschedule_params)
 
     assert fake_api.update_task.call_count == 4
 
@@ -304,17 +254,12 @@ def test_reschedule_with_rules(event_loop: AbstractEventLoop) -> None:
     )
 
 
-def test_reschedule_with_priority(event_loop: AbstractEventLoop) -> None:
+def test_reschedule_with_priority(
+    event_loop: AbstractEventLoop, reschedule_params: RescheduleParams
+) -> None:
     """when tasks have different priorities, it prioritizes the higher priority tasks first for rescheduling"""
 
-    kwargs: RescheduleParams = {
-        "token": "VALID_TOKEN",
-        "filter": "label:test",
-        "rules": "tests/fixtures/single_max_weight_rules.json",
-        "dry_run": False,
-        "time_zone": "UTC",
-        "schedule": None,
-    }
+    reschedule_params["rules"] = "tests/fixtures/single_max_weight_rules.json"
 
     fake_api = FakeTodoistAPI("VALID_TOKEN")
 
@@ -330,7 +275,7 @@ def test_reschedule_with_priority(event_loop: AbstractEventLoop) -> None:
     curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
-        postpwn(fake_api, event_loop, curr_datetime, **kwargs)
+        postpwn(fake_api, event_loop, curr_datetime, **reschedule_params)
 
     assert fake_api.update_task.call_count == 4
 
@@ -380,17 +325,12 @@ def test_reschedule_with_priority(event_loop: AbstractEventLoop) -> None:
     )
 
 
-def test_reschedule_with_rules_and_daily_weight(event_loop: AbstractEventLoop):
+def test_reschedule_with_rules_and_daily_weight(
+    event_loop: AbstractEventLoop, reschedule_params: RescheduleParams
+):
     """when rules with a daily max weight are provided, it reschedules tasks using smart rescheduling, respecting the daily max weight"""
 
-    kwargs: RescheduleParams = {
-        "token": "VALID_TOKEN",
-        "filter": "label:test",
-        "rules": "tests/fixtures/daily_max_weight_rules.json",
-        "dry_run": False,
-        "time_zone": "UTC",
-        "schedule": None,
-    }
+    reschedule_params["rules"] = "tests/fixtures/daily_max_weight_rules.json"
 
     fake_api = FakeTodoistAPI("VALID_TOKEN")
 
@@ -404,7 +344,7 @@ def test_reschedule_with_rules_and_daily_weight(event_loop: AbstractEventLoop):
     curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
-        postpwn(fake_api, event_loop, curr_datetime, **kwargs)
+        postpwn(fake_api, event_loop, curr_datetime, **reschedule_params)
 
     assert fake_api.update_task.call_count == 5
 
@@ -468,17 +408,12 @@ def test_reschedule_with_rules_and_daily_weight(event_loop: AbstractEventLoop):
     )
 
 
-def test_dry_run_doesn_not_update_tasks(event_loop: AbstractEventLoop) -> None:
+def test_dry_run_doesn_not_update_tasks(
+    event_loop: AbstractEventLoop, reschedule_params: RescheduleParams
+) -> None:
     """when dry run is enabled, it does not reschedule tasks"""
 
-    kwargs: RescheduleParams = {
-        "token": "VALID_TOKEN",
-        "filter": "label:test",
-        "rules": None,
-        "dry_run": True,
-        "time_zone": "UTC",
-        "schedule": None,
-    }
+    reschedule_params["dry_run"] = True
 
     fake_api = FakeTodoistAPI("VALID_TOKEN")
 
@@ -488,6 +423,6 @@ def test_dry_run_doesn_not_update_tasks(event_loop: AbstractEventLoop) -> None:
     curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
-        postpwn(fake_api, event_loop, curr_datetime, **kwargs)
+        postpwn(fake_api, event_loop, curr_datetime, **reschedule_params)
 
     assert fake_api.update_task.call_count == 0
