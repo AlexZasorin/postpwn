@@ -125,7 +125,6 @@ capacity:
 - [x] Update to latest Todoist API
 - [ ] Add tests
   - [x] Create pytest fixture for the reschedule params kwargs
-  - [ ] Parametrize the reschedule params fixture?
   - [ ] Create pytest fixture for the Fake TodoistAPI
   - [ ] Create pytest fixture for the current datetime
   - [ ] Refactor FakeTodoistAPI to create "distribution" of final task dates
