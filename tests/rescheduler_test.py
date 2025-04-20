@@ -14,13 +14,12 @@ from requests import HTTPError
 from postpwn.cli import RescheduleParams, postpwn
 
 # TODO: Tests to make:
-# Easy - Rules with a weight > max weight should return an error
-# Medium - With rules, tasks that have higher priority should be rescheduled first, according to knapsack algorithm
 # Medium/Hard - Application should retry on failure
 # Hard - Passing in a valid cron string triggers rescheduling on that cron schedule and doesn't raise an error
 # Hard - Test this as part of an E2E test? - When time zone is specified, tasks should be rescheduled properly according to that time zone
 
-# TODO: How to treat items with overlapping labels?
+# TODO: How to treat items with overlapping labels? - Check for them, and then
+# only reschedule according to the first rule that matches
 
 
 logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
@@ -294,6 +293,82 @@ def test_reschedule_with_rules(event_loop: AbstractEventLoop) -> None:
     assert (
         scheduled_dates[second_day].count("weight_one") == 0
         and scheduled_dates[second_day].count("weight_two") == 1
+    )
+
+    # Day after next (Jan 7)
+    third_day = curr_datetime + timedelta(days=2)
+    assert third_day in scheduled_dates
+    assert (
+        scheduled_dates[third_day].count("weight_one") == 0
+        and scheduled_dates[third_day].count("weight_two") == 1
+    )
+
+
+def test_reschedule_with_priority(event_loop: AbstractEventLoop) -> None:
+    """when tasks have different priorities, it prioritizes the higher priority tasks first for rescheduling"""
+
+    kwargs: RescheduleParams = {
+        "token": "VALID_TOKEN",
+        "filter": "label:test",
+        "rules": "tests/fixtures/single_max_weight_rules.json",
+        "dry_run": False,
+        "time_zone": "UTC",
+        "schedule": None,
+    }
+
+    fake_api = FakeTodoistAPI("VALID_TOKEN")
+
+    high_priority_task = build_task({"labels": ["weight_two"], "priority": 4})
+    tasks = [
+        *[build_task({"labels": ["weight_one"]}) for _ in range(2)],
+        build_task({"labels": ["weight_two"]}, is_datetime=True),
+        high_priority_task,
+    ]
+
+    fake_api.setup_tasks(tasks)
+
+    curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
+
+    with set_env({"RETRY_ATTEMPTS": "1"}):
+        postpwn(fake_api, event_loop, curr_datetime, **kwargs)
+
+    assert fake_api.update_task.call_count == 4
+
+    # Group tasks by due_datetime
+    calls = fake_api.update_task.call_args_list
+    scheduled_dates: dict[datetime, list[str]] = defaultdict(list)
+
+    for call in calls:
+        task_id = call.args[0]
+        due_datetime = (
+            call.kwargs["due_datetime"]
+            if "due_datetime" in call.kwargs
+            else datetime.combine(call.kwargs["due_date"], datetime.min.time())
+        )
+
+        matching_task = next(t for t in tasks if t.id == task_id)
+        task_label = (
+            next(label for label in matching_task.labels)
+            if matching_task.labels
+            else None
+        )
+
+        if task_label:
+            scheduled_dates[due_datetime].append(task_label)
+
+    # TODO: Assert that the high priority task is the one rescheduled to the current day
+
+    # Current day (Jan 5)
+    assert curr_datetime in scheduled_dates
+    assert scheduled_dates[curr_datetime].count("weight_one") == 0
+    assert scheduled_dates[curr_datetime].count("weight_two") == 1
+
+    # Next day (Jan 6)
+    second_day = curr_datetime + timedelta(days=1)
+    assert second_day in scheduled_dates
+    assert (
+        scheduled_dates[second_day].count("weight_one") == 2
+        and scheduled_dates[second_day].count("weight_two") == 0
     )
 
     # Day after next (Jan 7)
