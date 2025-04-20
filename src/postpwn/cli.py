@@ -148,6 +148,19 @@ def postpwn(
         max_weight = 10
         rules = None
 
+    if rules:
+        weight_limit = (
+            max_weight
+            if isinstance(max_weight, int)
+            else max(max_weight.model_dump().values())
+        )
+
+        for rule in rules:
+            if rule.get("weight", 0) > weight_limit:
+                raise ValueError(
+                    f"Invalid rule config: {rule['filter']} exceeds max weight {weight_limit}"
+                )
+
     logger.info(f"Rules: {rules}")
 
     if kwargs["schedule"]:

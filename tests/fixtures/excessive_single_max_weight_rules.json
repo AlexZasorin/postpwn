@@ -1,0 +1,7 @@
+{
+  "max_weight": 2,
+  "rules": [
+    { "filter": "@weight_one", "weight": 1 },
+    { "filter": "@weight_two", "weight": 3 }
+  ]
+}

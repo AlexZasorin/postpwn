@@ -147,6 +147,64 @@ def test_datetime_is_preserved(event_loop: AbstractEventLoop) -> None:
     assert fake_api.update_task.call_args.kwargs["due_datetime"] == curr_datetime
 
 
+def test_weight_exceeds_single_max_weight(event_loop: AbstractEventLoop) -> None:
+    """when a rule weight exceeds the singular max weight, it raises an error"""
+
+    kwargs: RescheduleParams = {
+        "token": "VALID_TOKEN",
+        "filter": "label:test",
+        "rules": "tests/fixtures/excessive_single_max_weight_rules.json",
+        "dry_run": False,
+        "time_zone": "UTC",
+        "schedule": None,
+    }
+
+    fake_api = FakeTodoistAPI("VALID_TOKEN")
+
+    unlabeled_task = build_task()
+    labeled_task = build_task({"labels": ["weight_one"]})
+
+    fake_api.setup_tasks([unlabeled_task, labeled_task])
+
+    curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
+
+    with set_env({"RETRY_ATTEMPTS": "1"}):
+        with pytest.raises(
+            ValueError,
+            match="Invalid rule config: @weight_two exceeds max weight 2",
+        ):
+            postpwn(fake_api, event_loop, curr_datetime, **kwargs)
+
+
+def test_weight_exceeds_daily_max_weight(event_loop: AbstractEventLoop) -> None:
+    """when a rule exceeds one of the daily max weights, it raises an error"""
+
+    kwargs: RescheduleParams = {
+        "token": "VALID_TOKEN",
+        "filter": "label:test",
+        "rules": "tests/fixtures/excessive_daily_max_weight_rules.json",
+        "dry_run": False,
+        "time_zone": "UTC",
+        "schedule": None,
+    }
+
+    fake_api = FakeTodoistAPI("VALID_TOKEN")
+
+    unlabeled_task = build_task()
+    labeled_task = build_task({"labels": ["weight_one"]})
+
+    fake_api.setup_tasks([unlabeled_task, labeled_task])
+
+    curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
+
+    with set_env({"RETRY_ATTEMPTS": "1"}):
+        with pytest.raises(
+            ValueError,
+            match="Invalid rule config: @weight_two exceeds max weight 6",
+        ):
+            postpwn(fake_api, event_loop, curr_datetime, **kwargs)
+
+
 def test_no_matching_label(event_loop: asyncio.AbstractEventLoop) -> None:
     """when tasks have no matching labels, they are not rescheduled"""
 
