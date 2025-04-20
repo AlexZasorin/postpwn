@@ -75,15 +75,16 @@ def fill_my_sack(
     return selected[max_weight]
 
 
-def get_update_params(date_str: str, due: Due) -> UpdateTaskInput:
+def get_update_params(date_str: date, due: Due) -> UpdateTaskInput:
     update_params: UpdateTaskInput = {}
-    if due.datetime:
-        time = datetime.strptime(due.datetime, "%Y-%m-%dT%H:%M:%S").time()
-        new_datetime = datetime.strptime(f"{date_str} {time}", "%Y-%m-%d %H:%M:%S")
 
-        update_params["due_datetime"] = new_datetime.strftime("%Y-%m-%dT%H:%M:%S")
+    if isinstance(due.date, datetime):  # type:ignore[call-arg]
+        time = datetime.strptime(str(due.date), "%Y-%m-%d %H:%M:%S").time()  # type:ignore[call-arg]
+        new_datetime = datetime.strptime(f"{str(date_str)} {time}", "%Y-%m-%d %H:%M:%S")
+        update_params["due_datetime"] = new_datetime
     else:
-        update_params["due_date"] = date_str
+        new_datetime = datetime.strptime(str(date_str), "%Y-%m-%d")
+        update_params["due_date"] = new_datetime.date()
 
     if due.string:
         update_params["due_string"] = due.string
@@ -108,8 +109,14 @@ def get_weekday_weight(weight_config: WeightConfig | int, date: date) -> int:
     return weekday_mapping[date.weekday()]
 
 
-async def get_tasks(api: TodoistAPIProtocol, filter: str) -> list[Task]:
-    return await api.get_tasks(filter=filter)
+async def filter_tasks(api: TodoistAPIProtocol, query: str) -> list[Task]:
+    tasks: list[Task] = []
+
+    task_generator = await api.filter_tasks(query=query)
+    async for task_list in task_generator:
+        tasks.extend(task_list)
+
+    return tasks
 
 
 async def update_task(
@@ -137,7 +144,7 @@ async def reschedule(
     rules: list[Rule] | None = None,
     dry_run: bool = False,
 ) -> None:
-    get_tasks_with_retry = build_retry(get_tasks)
+    get_tasks_with_retry = build_retry(filter_tasks)
 
     tasks = await get_tasks_with_retry(api, filter)
 
@@ -148,29 +155,37 @@ async def reschedule(
     weighted_tasks = [task for task in weighted_tasks if task is not None]
 
     weighted_tasks.sort(
-        key=lambda task: task.due.date if task.due else str(datetime.max.date()),
+        key=lambda task: datetime.fromisoformat(str(task.due.date))  # type:ignore[call-arg]
+        if task.due
+        else datetime.max.date(),
     )
 
-    new_schedule: dict[str, list[WeightedTask]] = defaultdict(list)
+    new_schedule: dict[date, list[WeightedTask]] = defaultdict(list)
     reschedule_date = curr_date or datetime.now(tz=ZoneInfo(time_zone)).date()
     while len(weighted_tasks) != 0:
         weight = get_weekday_weight(max_weight, reschedule_date)
         next_batch = fill_my_sack(weight, weighted_tasks)
 
-        new_schedule[str(reschedule_date)].extend(next_batch)
+        new_schedule[reschedule_date].extend(next_batch)
         weighted_tasks = [task for task in weighted_tasks if task not in next_batch]
 
         reschedule_date += timedelta(days=1)
 
-    update_coroutines: list[Coroutine[Any, Any, bool]] = []
+    update_coroutines: list[Coroutine[Any, Any, Task]] = []
     for date_str, weighted_tasks in new_schedule.items():
         for task in weighted_tasks:
-            if task.due and task.due.date != date_str:
-                logger.info(
-                    f"Rescheduling {task.content} from {task.due.date} to {date_str}"
+            if task.due and (
+                (isinstance(task.due.date, date) and task.due.date != date_str)  # type:ignore[call-arg]
+                or (
+                    isinstance(task.due.date, datetime)  # type:ignore[call-arg]
+                    and task.due.date.date() != date_str  # type:ignore[call-arg]
                 )
-
+            ):
                 update_params = get_update_params(date_str, task.due)
+
+                logger.info(
+                    f"Rescheduling {task.content} from {task.due.date} to {update_params['due_date'] if 'due_date' in update_params else update_params['due_datetime']}"  # type:ignore[call-arg]
+                )
                 if not dry_run:
                     update_task_with_retry = build_retry(update_task)
                     update_coroutines.append(

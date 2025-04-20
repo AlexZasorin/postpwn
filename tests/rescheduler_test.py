@@ -1,19 +1,20 @@
 import asyncio
-from collections import defaultdict
 import logging
 import sys
 from asyncio import AbstractEventLoop
+from collections import defaultdict
 from datetime import datetime, timedelta
 
 import pytest
 from helpers.data_generators import build_task
+from helpers.fake_api import FakeTodoistAPI
 from helpers.set_env import set_env
 from requests import HTTPError
 
-from postpwn.api import FakeTodoistAPI
 from postpwn.cli import RescheduleParams, postpwn
 
 # TODO: Tests to make:
+# Easy - Test that datetime is preserved
 # Easy - Rules with a weight > max weight should return an error
 # Medium - With rules, tasks that have higher priority should be rescheduled first, according to knapsack algorithm
 # Medium/Hard - Application should retry on failure
@@ -112,15 +113,13 @@ def test_no_rules_provided(event_loop: asyncio.AbstractEventLoop) -> None:
     task = build_task()
     fake_api.setup_tasks([task])
 
-    curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
+    curr_datetime = datetime(2025, 1, 5, 0, 0, 0).date()
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
-        postpwn(fake_api, event_loop, curr_datetime.date(), **kwargs)
+        postpwn(fake_api, event_loop, curr_datetime, **kwargs)
 
     assert fake_api.update_task.call_count == 1
-    assert (
-        fake_api.update_task.call_args.kwargs["due_datetime"] == "2025-01-05T12:00:00"
-    )
+    assert fake_api.update_task.call_args.kwargs["due_date"] == curr_datetime
 
 
 def test_reschedule_with_rules(event_loop: AbstractEventLoop) -> None:
@@ -139,12 +138,12 @@ def test_reschedule_with_rules(event_loop: AbstractEventLoop) -> None:
 
     tasks = [
         *[build_task({"labels": ["weight_one"]}) for _ in range(2)],
-        *[build_task({"labels": ["weight_two"]}) for _ in range(2)],
+        *[build_task({"labels": ["weight_two"]}, is_datetime=True) for _ in range(2)],
     ]
 
     fake_api.setup_tasks(tasks)
 
-    curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
+    curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
         postpwn(fake_api, event_loop, curr_datetime.date(), **kwargs)
@@ -153,11 +152,15 @@ def test_reschedule_with_rules(event_loop: AbstractEventLoop) -> None:
 
     # Group tasks by due_datetime
     calls = fake_api.update_task.call_args_list
-    scheduled_dates: dict[str, list[str]] = defaultdict(list)
+    scheduled_dates: dict[datetime, list[str]] = defaultdict(list)
 
     for call in calls:
         task_id = call.args[0]
-        due_datetime = call.kwargs["due_datetime"]
+        due_datetime = (
+            call.kwargs["due_datetime"]
+            if "due_datetime" in call.kwargs
+            else datetime.combine(call.kwargs["due_date"], datetime.min.time())
+        )
 
         matching_task = next(t for t in tasks if t.id == task_id)
         task_label = (
@@ -169,16 +172,13 @@ def test_reschedule_with_rules(event_loop: AbstractEventLoop) -> None:
         if task_label:
             scheduled_dates[due_datetime].append(task_label)
 
-    format = "%Y-%m-%dT%H:%M:%S"
-
     # Current day (Jan 5)
-    curr_date_str = curr_datetime.strftime(format)
-    assert curr_date_str in scheduled_dates
-    assert scheduled_dates[curr_date_str].count("weight_one") == 2
-    assert scheduled_dates[curr_date_str].count("weight_two") == 0
+    assert curr_datetime in scheduled_dates
+    assert scheduled_dates[curr_datetime].count("weight_one") == 2
+    assert scheduled_dates[curr_datetime].count("weight_two") == 0
 
     # Next day (Jan 6)
-    second_day = (curr_datetime + timedelta(days=1)).strftime(format)
+    second_day = curr_datetime + timedelta(days=1)
     assert second_day in scheduled_dates
     assert (
         scheduled_dates[second_day].count("weight_one") == 0
@@ -186,7 +186,7 @@ def test_reschedule_with_rules(event_loop: AbstractEventLoop) -> None:
     )
 
     # Day after next (Jan 7)
-    third_day = (curr_datetime + timedelta(days=2)).strftime(format)
+    third_day = curr_datetime + timedelta(days=2)
     assert third_day in scheduled_dates
     assert (
         scheduled_dates[third_day].count("weight_one") == 0
@@ -237,13 +237,13 @@ def test_reschedule_with_rules_and_daily_weight(event_loop: AbstractEventLoop):
     fake_api = FakeTodoistAPI("VALID_TOKEN")
 
     tasks = [
-        *[build_task({"labels": ["weight_one"]}) for _ in range(3)],
+        *[build_task({"labels": ["weight_one"]}, is_datetime=True) for _ in range(3)],
         *[build_task({"labels": ["weight_two"]}) for _ in range(2)],
     ]
 
     fake_api.setup_tasks(tasks)
 
-    curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
+    curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
 
     with set_env({"RETRY_ATTEMPTS": "1"}):
         postpwn(fake_api, event_loop, curr_datetime.date(), **kwargs)
@@ -252,11 +252,15 @@ def test_reschedule_with_rules_and_daily_weight(event_loop: AbstractEventLoop):
 
     # Group tasks by due_datetime
     calls = fake_api.update_task.call_args_list
-    scheduled_dates: dict[str, list[str]] = defaultdict(list)
+    scheduled_dates: dict[datetime, list[str]] = defaultdict(list)
 
     for call in calls:
         task_id = call.args[0]
-        due_datetime = call.kwargs["due_datetime"]
+        due_datetime = (
+            call.kwargs["due_datetime"]
+            if "due_datetime" in call.kwargs
+            else datetime.combine(call.kwargs["due_date"], datetime.min.time())
+        )
 
         matching_task = next(t for t in tasks if t.id == task_id)
         task_label = (
@@ -268,16 +272,13 @@ def test_reschedule_with_rules_and_daily_weight(event_loop: AbstractEventLoop):
         if task_label:
             scheduled_dates[due_datetime].append(task_label)
 
-    format = "%Y-%m-%dT%H:%M:%S"
-
     # Current day (Jan 5)
-    curr_date_str = curr_datetime.strftime(format)
-    assert curr_date_str not in scheduled_dates
-    assert scheduled_dates[curr_date_str].count("weight_one") == 0
-    assert scheduled_dates[curr_date_str].count("weight_two") == 0
+    assert curr_datetime not in scheduled_dates
+    assert scheduled_dates[curr_datetime].count("weight_one") == 0
+    assert scheduled_dates[curr_datetime].count("weight_two") == 0
 
     # Next day (Jan 6)
-    second_day = (curr_datetime + timedelta(days=1)).strftime(format)
+    second_day = curr_datetime + timedelta(days=1)
     assert second_day in scheduled_dates
     assert (
         scheduled_dates[second_day].count("weight_one") == 1
@@ -285,7 +286,7 @@ def test_reschedule_with_rules_and_daily_weight(event_loop: AbstractEventLoop):
     )
 
     # Day after next (Jan 7)
-    third_day = (curr_datetime + timedelta(days=2)).strftime(format)
+    third_day = curr_datetime + timedelta(days=2)
     assert third_day in scheduled_dates
     assert (
         scheduled_dates[third_day].count("weight_one") == 2
@@ -293,7 +294,7 @@ def test_reschedule_with_rules_and_daily_weight(event_loop: AbstractEventLoop):
     )
 
     # Day...after that
-    fourth_day = (curr_datetime + timedelta(days=3)).strftime(format)
+    fourth_day = curr_datetime + timedelta(days=3)
     assert fourth_day in scheduled_dates
     assert (
         scheduled_dates[fourth_day].count("weight_one") == 0
@@ -301,7 +302,7 @@ def test_reschedule_with_rules_and_daily_weight(event_loop: AbstractEventLoop):
     )
 
     # ...
-    fifth_day = (curr_datetime + timedelta(days=4)).strftime(format)
+    fifth_day = curr_datetime + timedelta(days=4)
     assert fifth_day in scheduled_dates
     assert (
         scheduled_dates[fifth_day].count("weight_one") == 0

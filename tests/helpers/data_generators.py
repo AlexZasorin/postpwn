@@ -1,8 +1,10 @@
 import random
+from datetime import date, datetime
 from typing import Any, Optional
 
+from dataclass_wizard import DatePattern, DateTimePattern
 from faker import Faker
-from todoist_api_python.models import Due, Duration, Task
+from todoist_api_python.models import Deadline, Due, Duration, Task
 
 
 def generate_id() -> str:
@@ -14,6 +16,10 @@ def generate_int(min_val: int = 1, max_val: int = 100) -> int:
     return random.randint(min_val, max_val)
 
 
+def generate_bool() -> bool:
+    return random.choice([True, False])
+
+
 def generate_text(words: int = 10, ext_word_list: list[str] | None = None) -> str:
     fake = Faker()
 
@@ -22,20 +28,17 @@ def generate_text(words: int = 10, ext_word_list: list[str] | None = None) -> st
     return " ".join(generated_words)
 
 
-def generate_datetime(before_now: bool = True, after_now: bool = False) -> str:
+def generate_datetime(before_now: bool = True, after_now: bool = False) -> datetime:
     fake = Faker()
-    return (
-        fake.date_time_this_month(before_now=before_now, after_now=after_now)
-        .replace(hour=12, minute=0, second=0, microsecond=0)
-        .strftime("%Y-%m-%dT%H:%M:%S")
-    )
+    return fake.date_time_this_month(
+        before_now=before_now, after_now=after_now
+    ).replace(hour=0, minute=0, second=0, microsecond=0)
 
 
-def generate_date(before_today: bool = True, after_today: bool = False) -> str:
+def generate_date(before_today: bool = True, after_today: bool = False) -> date:
     fake = Faker()
-    return fake.date_this_month(
-        before_today=before_today, after_today=after_today
-    ).strftime("%Y-%m-%d")
+    fake.date
+    return fake.date_this_month(before_today=before_today, after_today=after_today)
 
 
 def generate_timezone() -> str:
@@ -48,11 +51,16 @@ def generate_url() -> str:
     return fake.url()
 
 
-def build_due(properties: Optional[dict[str, Any]] = None) -> Due:
+def build_due(
+    properties: Optional[dict[str, Any]] = None, is_datetime: bool = False
+) -> Due:
     defaults = Due(
-        date=generate_date(),
+        date=DateTimePattern.fromisoformat(  # type: ignore[call-arg]
+            generate_datetime().strftime("%Y-%m-%dT%H:%M:%S")
+        )
+        if is_datetime
+        else DatePattern.fromisoformat(generate_date().strftime("%Y-%m-%d")),
         is_recurring=False,
-        datetime=generate_datetime(),
         string=generate_text(),
         timezone=generate_timezone(),
     )
@@ -73,7 +81,7 @@ def build_duration(properties: Optional[dict[str, Any]] = None) -> Duration:
         amount=generate_int(),
         # TODO: Create a separate fixture for generating random string literals
         # instead of using text fixture
-        unit=generate_text(words=1, ext_word_list=["minute", "day"]),
+        unit=random.choice(["minute", "day"]),
     )
 
     if properties is None:
@@ -87,26 +95,53 @@ def build_duration(properties: Optional[dict[str, Any]] = None) -> Duration:
     )
 
 
-def build_task(properties: Optional[dict[str, Any]] = None) -> Task:
+def build_deadline(properties: Optional[dict[str, Any]] = None) -> Deadline:
+    defaults = Deadline(
+        date=random.choice(
+            [
+                DatePattern.fromisoformat(generate_date().strftime("%Y-%m-%d")),
+                DateTimePattern.fromisoformat(
+                    generate_datetime().strftime("%Y-%m-%dT%H:%M:%S")
+                ),
+            ]
+        ),  # type: ignore[call-arg]
+        lang="en",
+    )
+
+    if properties is None:
+        return defaults
+
+    return Deadline(
+        **{
+            field: properties.get(field) or getattr(defaults, field)
+            for field in defaults.__dict__
+        }
+    )
+
+
+def build_task(
+    properties: Optional[dict[str, Any]] = None, is_datetime: bool = False
+) -> Task:
     defaults = Task(
-        assignee_id=generate_id(),
-        assigner_id=generate_id(),
-        comment_count=generate_int(),
-        is_completed=False,
-        content=generate_text(),
-        created_at=generate_datetime(),
-        creator_id=generate_id(),
-        description=generate_text(),
-        due=build_due(),
         id=generate_id(),
-        labels=[generate_text(words=1) for _ in range(3)],
-        order=generate_int(),
-        parent_id=generate_id(),
-        priority=1,
+        content=generate_text(),
+        description=generate_text(),
         project_id=generate_id(),
         section_id=generate_id(),
-        url=generate_url(),
+        parent_id=generate_id(),
+        labels=[generate_text(words=1) for _ in range(3)],
+        priority=1,
+        due=build_due(is_datetime=is_datetime),
+        deadline=build_deadline(),
         duration=build_duration(),
+        is_collapsed=generate_bool(),
+        order=generate_int(),
+        assignee_id=generate_id(),
+        assigner_id=generate_id(),
+        completed_at=None,
+        creator_id=generate_id(),
+        created_at=generate_datetime(),  # type: ignore[call-arg]
+        updated_at=generate_datetime(),  # type: ignore[call-arg]
     )
 
     if properties is None:

@@ -7,25 +7,26 @@ class WeightedTask(Task):
     weight: int = 1
 
     def __init__(self, task: Task, weight: int):
-        super().__init__(
-            assignee_id=task.assignee_id,
-            assigner_id=task.assigner_id,
-            comment_count=task.comment_count,
-            is_completed=task.is_completed,
-            content=task.content,
-            created_at=task.created_at,
-            creator_id=task.creator_id,
-            description=task.description,
-            due=task.due,
+        super().__init__(  # pyright: ignore[reportUnknownMemberType]
             id=task.id,
-            labels=task.labels,
-            order=task.order,
-            parent_id=task.parent_id,
-            priority=task.priority,
+            content=task.content,
+            description=task.description,
             project_id=task.project_id,
             section_id=task.section_id,
-            url=task.url,
+            parent_id=task.parent_id,
+            labels=task.labels,
+            priority=task.priority,
+            due=task.due,
+            deadline=task.deadline,
             duration=task.duration,
-            sync_id=task.sync_id,
+            is_collapsed=task.is_collapsed,
+            order=task.order,
+            assignee_id=task.assignee_id,
+            assigner_id=task.assigner_id,
+            completed_at=task.completed_at,  # type: ignore[call-arg]
+            creator_id=task.creator_id,
+            created_at=task.created_at,  # type: ignore[call-arg]
+            updated_at=task.updated_at,  # type: ignore[call-arg]
         )
+
         self.weight = weight
