@@ -147,6 +147,34 @@ def test_datetime_is_preserved(event_loop: AbstractEventLoop) -> None:
     assert fake_api.update_task.call_args.kwargs["due_datetime"] == curr_datetime
 
 
+def test_no_matching_label(event_loop: asyncio.AbstractEventLoop) -> None:
+    """when tasks have no matching labels, they are not rescheduled"""
+
+    kwargs: RescheduleParams = {
+        "token": "VALID_TOKEN",
+        "filter": "label:test",
+        "rules": "tests/fixtures/single_max_weight_rules.json",
+        "dry_run": False,
+        "time_zone": "UTC",
+        "schedule": None,
+    }
+
+    fake_api = FakeTodoistAPI("VALID_TOKEN")
+
+    unlabeled_task = build_task()
+    labeled_task = build_task({"labels": ["weight_one"]})
+
+    fake_api.setup_tasks([unlabeled_task, labeled_task])
+
+    curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
+
+    with set_env({"RETRY_ATTEMPTS": "1"}):
+        postpwn(fake_api, event_loop, curr_datetime, **kwargs)
+
+    assert fake_api.update_task.call_count == 1
+    assert fake_api.update_task.call_args.args[0] == labeled_task.id
+
+
 def test_reschedule_with_rules(event_loop: AbstractEventLoop) -> None:
     """when rules are provided, it reschedules tasks using smart rescheduling, respecting max weight"""
 
@@ -217,34 +245,6 @@ def test_reschedule_with_rules(event_loop: AbstractEventLoop) -> None:
         scheduled_dates[third_day].count("weight_one") == 0
         and scheduled_dates[third_day].count("weight_two") == 1
     )
-
-
-def test_no_matching_label(event_loop: asyncio.AbstractEventLoop) -> None:
-    """when tasks have no matching labels, they are not rescheduled"""
-
-    kwargs: RescheduleParams = {
-        "token": "VALID_TOKEN",
-        "filter": "label:test",
-        "rules": "tests/fixtures/single_max_weight_rules.json",
-        "dry_run": False,
-        "time_zone": "UTC",
-        "schedule": None,
-    }
-
-    fake_api = FakeTodoistAPI("VALID_TOKEN")
-
-    unlabeled_task = build_task()
-    labeled_task = build_task({"labels": ["weight_one"]})
-
-    fake_api.setup_tasks([unlabeled_task, labeled_task])
-
-    curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
-
-    with set_env({"RETRY_ATTEMPTS": "1"}):
-        postpwn(fake_api, event_loop, curr_datetime, **kwargs)
-
-    assert fake_api.update_task.call_count == 1
-    assert fake_api.update_task.call_args.args[0] == labeled_task.id
 
 
 def test_reschedule_with_rules_and_daily_weight(event_loop: AbstractEventLoop):
