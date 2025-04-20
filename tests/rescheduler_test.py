@@ -14,7 +14,6 @@ from requests import HTTPError
 from postpwn.cli import RescheduleParams, postpwn
 
 # TODO: Tests to make:
-# Easy - Test that datetime is preserved
 # Easy - Rules with a weight > max weight should return an error
 # Medium - With rules, tasks that have higher priority should be rescheduled first, according to knapsack algorithm
 # Medium/Hard - Application should retry on failure
@@ -120,6 +119,32 @@ def test_no_rules_provided(event_loop: asyncio.AbstractEventLoop) -> None:
 
     assert fake_api.update_task.call_count == 1
     assert fake_api.update_task.call_args.kwargs["due_date"] == curr_datetime
+
+
+def test_datetime_is_preserved(event_loop: AbstractEventLoop) -> None:
+    """when a task has a datetime due date, the specific time is preserved"""
+
+    kwargs: RescheduleParams = {
+        "token": "VALID_TOKEN",
+        "filter": "label:test",
+        "rules": None,
+        "dry_run": False,
+        "time_zone": "UTC",
+        "schedule": None,
+    }
+
+    fake_api = FakeTodoistAPI("VALID_TOKEN")
+
+    task = build_task(is_datetime=True)
+    fake_api.setup_tasks([task])
+
+    curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
+
+    with set_env({"RETRY_ATTEMPTS": "1"}):
+        postpwn(fake_api, event_loop, curr_date=curr_datetime, **kwargs)
+
+    assert fake_api.update_task.call_count == 1
+    assert fake_api.update_task.call_args.kwargs["due_datetime"] == curr_datetime
 
 
 def test_reschedule_with_rules(event_loop: AbstractEventLoop) -> None:
