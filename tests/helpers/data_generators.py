@@ -55,11 +55,13 @@ def build_due(
     properties: Optional[dict[str, Any]] = None, is_datetime: bool = False
 ) -> Due:
     defaults = Due(
-        date=DateTimePattern.fromisoformat(  # type: ignore[call-arg]
-            generate_datetime().strftime("%Y-%m-%dT%H:%M:%S")
-        )
-        if is_datetime
-        else DatePattern.fromisoformat(generate_date().strftime("%Y-%m-%d")),
+        date=(
+            DateTimePattern.fromisoformat(  # type: ignore[call-arg]
+                generate_datetime().strftime("%Y-%m-%dT%H:%M:%S")
+            )
+            if is_datetime
+            else DatePattern.fromisoformat(generate_date().strftime("%Y-%m-%d"))
+        ),
         is_recurring=False,
         string=generate_text(),
         timezone=generate_timezone(),
