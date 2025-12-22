@@ -60,7 +60,9 @@ def test_passing_invalid_cron_string_raises_error(
             postpwn(fake_api, loop, curr_datetime, **params)
 
 
-def test_no_filter_provided(loop: AbstractEventLoop, params: RescheduleParams, fake_api: FakeTodoistAPI) -> None:
+def test_no_filter_provided(
+    loop: AbstractEventLoop, params: RescheduleParams, fake_api: FakeTodoistAPI
+) -> None:
     """when no filter is provided, it does nothing"""
 
     params["filter"] = ""
@@ -73,7 +75,9 @@ def test_no_filter_provided(loop: AbstractEventLoop, params: RescheduleParams, f
     assert fake_api.update_task.call_count == 0
 
 
-def test_no_rules_provided(loop: AbstractEventLoop, params: RescheduleParams, fake_api: FakeTodoistAPI) -> None:
+def test_no_rules_provided(
+    loop: AbstractEventLoop, params: RescheduleParams, fake_api: FakeTodoistAPI
+) -> None:
     """when no rules are provided, it reschedules all tasks to the current day"""
 
     task = build_task()
@@ -149,7 +153,9 @@ def test_weight_exceeds_daily_max_weight(
             postpwn(fake_api, loop, curr_datetime, **params)
 
 
-def test_no_matching_label(loop: AbstractEventLoop, params: RescheduleParams, fake_api: FakeTodoistAPI) -> None:
+def test_no_matching_label(
+    loop: AbstractEventLoop, params: RescheduleParams, fake_api: FakeTodoistAPI
+) -> None:
     """when tasks have no matching labels, they are not rescheduled"""
 
     params["rules"] = "tests/fixtures/single_max_weight_rules.json"
