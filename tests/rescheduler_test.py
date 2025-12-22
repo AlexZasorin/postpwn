@@ -27,6 +27,11 @@ logger = logging.getLogger("postpwn")
 logger.setLevel(logging.INFO)
 
 
+@pytest.fixture
+def fake_api():
+    return FakeTodoistAPI("VALID_TOKEN")
+
+
 def test_no_token_provided(loop: AbstractEventLoop, params: RescheduleParams) -> None:
     """when no token is provided, it raises an error"""
 
@@ -42,13 +47,11 @@ def test_no_token_provided(loop: AbstractEventLoop, params: RescheduleParams) ->
 
 
 def test_passing_invalid_cron_string_raises_error(
-    loop: AbstractEventLoop, params: RescheduleParams
+    loop: AbstractEventLoop, params: RescheduleParams, fake_api: FakeTodoistAPI
 ) -> None:
     """when an invalid cron string is provided, it raises an error"""
 
     params["schedule"] = "invalid_cron_string"
-
-    fake_api = FakeTodoistAPI("VALID_TOKEN")
 
     curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
 
@@ -57,12 +60,10 @@ def test_passing_invalid_cron_string_raises_error(
             postpwn(fake_api, loop, curr_datetime, **params)
 
 
-def test_no_filter_provided(loop: AbstractEventLoop, params: RescheduleParams) -> None:
+def test_no_filter_provided(loop: AbstractEventLoop, params: RescheduleParams, fake_api: FakeTodoistAPI) -> None:
     """when no filter is provided, it does nothing"""
 
     params["filter"] = ""
-
-    fake_api = FakeTodoistAPI("VALID_TOKEN")
 
     curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
 
@@ -72,10 +73,8 @@ def test_no_filter_provided(loop: AbstractEventLoop, params: RescheduleParams) -
     assert fake_api.update_task.call_count == 0
 
 
-def test_no_rules_provided(loop: AbstractEventLoop, params: RescheduleParams) -> None:
+def test_no_rules_provided(loop: AbstractEventLoop, params: RescheduleParams, fake_api: FakeTodoistAPI) -> None:
     """when no rules are provided, it reschedules all tasks to the current day"""
-
-    fake_api = FakeTodoistAPI("VALID_TOKEN")
 
     task = build_task()
     fake_api.setup_tasks([task])
@@ -90,11 +89,9 @@ def test_no_rules_provided(loop: AbstractEventLoop, params: RescheduleParams) ->
 
 
 def test_datetime_is_preserved(
-    loop: AbstractEventLoop, params: RescheduleParams
+    loop: AbstractEventLoop, params: RescheduleParams, fake_api: FakeTodoistAPI
 ) -> None:
     """when a task has a datetime due date, the specific time is preserved"""
-
-    fake_api = FakeTodoistAPI("VALID_TOKEN")
 
     task = build_task(is_datetime=True)
     fake_api.setup_tasks([task])
@@ -109,13 +106,11 @@ def test_datetime_is_preserved(
 
 
 def test_weight_exceeds_single_max_weight(
-    loop: AbstractEventLoop, params: RescheduleParams
+    loop: AbstractEventLoop, params: RescheduleParams, fake_api: FakeTodoistAPI
 ) -> None:
     """when a rule weight exceeds the singular max weight, it raises an error"""
 
     params["rules"] = "tests/fixtures/excessive_single_max_weight_rules.json"
-
-    fake_api = FakeTodoistAPI("VALID_TOKEN")
 
     unlabeled_task = build_task()
     labeled_task = build_task({"labels": ["weight_one"]})
@@ -133,13 +128,11 @@ def test_weight_exceeds_single_max_weight(
 
 
 def test_weight_exceeds_daily_max_weight(
-    loop: AbstractEventLoop, params: RescheduleParams
+    loop: AbstractEventLoop, params: RescheduleParams, fake_api: FakeTodoistAPI
 ) -> None:
     """when a rule exceeds one of the daily max weights, it raises an error"""
 
     params["rules"] = "tests/fixtures/excessive_daily_max_weight_rules.json"
-
-    fake_api = FakeTodoistAPI("VALID_TOKEN")
 
     unlabeled_task = build_task()
     labeled_task = build_task({"labels": ["weight_one"]})
@@ -156,12 +149,10 @@ def test_weight_exceeds_daily_max_weight(
             postpwn(fake_api, loop, curr_datetime, **params)
 
 
-def test_no_matching_label(loop: AbstractEventLoop, params: RescheduleParams) -> None:
+def test_no_matching_label(loop: AbstractEventLoop, params: RescheduleParams, fake_api: FakeTodoistAPI) -> None:
     """when tasks have no matching labels, they are not rescheduled"""
 
     params["rules"] = "tests/fixtures/single_max_weight_rules.json"
-
-    fake_api = FakeTodoistAPI("VALID_TOKEN")
 
     unlabeled_task = build_task()
     labeled_task = build_task({"labels": ["weight_one"]})
@@ -178,13 +169,11 @@ def test_no_matching_label(loop: AbstractEventLoop, params: RescheduleParams) ->
 
 
 def test_reschedule_with_rules(
-    loop: AbstractEventLoop, params: RescheduleParams
+    loop: AbstractEventLoop, params: RescheduleParams, fake_api: FakeTodoistAPI
 ) -> None:
     """when rules are provided, it reschedules tasks using smart rescheduling, respecting max weight"""
 
     params["rules"] = "tests/fixtures/single_max_weight_rules.json"
-
-    fake_api = FakeTodoistAPI("VALID_TOKEN")
 
     tasks = [
         *[build_task({"labels": ["weight_one"]}) for _ in range(2)],
@@ -245,13 +234,11 @@ def test_reschedule_with_rules(
 
 
 def test_reschedule_with_priority(
-    loop: AbstractEventLoop, params: RescheduleParams
+    loop: AbstractEventLoop, params: RescheduleParams, fake_api: FakeTodoistAPI
 ) -> None:
     """when tasks have different priorities, it prioritizes the higher priority tasks first for rescheduling"""
 
     params["rules"] = "tests/fixtures/single_max_weight_rules.json"
-
-    fake_api = FakeTodoistAPI("VALID_TOKEN")
 
     high_priority_task = build_task({"labels": ["weight_two"], "priority": 4})
     tasks = [
@@ -316,13 +303,11 @@ def test_reschedule_with_priority(
 
 
 def test_reschedule_with_rules_and_daily_weight(
-    loop: AbstractEventLoop, params: RescheduleParams
+    loop: AbstractEventLoop, params: RescheduleParams, fake_api: FakeTodoistAPI
 ):
     """when rules with a daily max weight are provided, it reschedules tasks using smart rescheduling, respecting the daily max weight"""
 
     params["rules"] = "tests/fixtures/daily_max_weight_rules.json"
-
-    fake_api = FakeTodoistAPI("VALID_TOKEN")
 
     tasks = [
         *[build_task({"labels": ["weight_one"]}, is_datetime=True) for _ in range(3)],
@@ -399,13 +384,11 @@ def test_reschedule_with_rules_and_daily_weight(
 
 
 def test_dry_run_doesn_not_update_tasks(
-    loop: AbstractEventLoop, params: RescheduleParams
+    loop: AbstractEventLoop, params: RescheduleParams, fake_api: FakeTodoistAPI
 ) -> None:
     """when dry run is enabled, it does not reschedule tasks"""
 
     params["dry_run"] = True
-
-    fake_api = FakeTodoistAPI("VALID_TOKEN")
 
     task = build_task()
     fake_api.setup_tasks([task])
