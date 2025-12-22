@@ -127,15 +127,15 @@ capacity:
   - [x] Create pytest fixture for the reschedule params kwargs
   - [x] Create pytest fixture for the Fake TodoistAPI
   - [x] Create pytest fixture for the current datetime
-  - [ ] Refactor FakeTodoistAPI to create "distribution" of final task dates
-  for easier comparison, refactor test cases to use this
+  - [.] Refactor FakeTodoistAPI to create "distribution" of final task
+  dates for easier comparison, refactor test cases to use this
 - [ ] Make logs not look like ass lol
 - [ ] Switch to toml config???
   - [ ] Merge CLI args and rules config into a unified configuration
 - [ ] Allow disabling "smart" rescheduling
 - [x] Consider retrying individual Todoist API calls instead of the entire
-- [ ] Use Session from requests to implement retry logic?
 rescheduling function
+- [ ] Use Session from requests to implement retry logic?
 - [ ] Catch improper cron string
 - [ ] Try using V4 API of scheduler for typing
 - [ ] Add limits as alternative to weights

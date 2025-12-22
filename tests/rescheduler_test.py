@@ -195,48 +195,25 @@ def test_reschedule_with_rules(
 
     assert fake_api.update_task.call_count == 4
 
-    # Group tasks by due_datetime
-    calls = fake_api.update_task.call_args_list
-    scheduled_dates: dict[datetime, list[str]] = defaultdict(list)
-
-    for call in calls:
-        task_id = call.args[0]
-        due_datetime = (
-            call.kwargs["due_datetime"]
-            if "due_datetime" in call.kwargs
-            else datetime.combine(call.kwargs["due_date"], datetime.min.time())
-        )
-
-        matching_task = next(t for t in tasks if t.id == task_id)
-        task_label = (
-            next(label for label in matching_task.labels)
-            if matching_task.labels
-            else None
-        )
-
-        if task_label:
-            scheduled_dates[due_datetime].append(task_label)
+    # Get distribution of scheduled tasks
+    scheduled_dates = fake_api.get_distribution()
 
     # Current day (Jan 5)
     assert curr_datetime in scheduled_dates
-    assert scheduled_dates[curr_datetime].count("weight_one") == 2
-    assert scheduled_dates[curr_datetime].count("weight_two") == 0
+    assert scheduled_dates[curr_datetime]["weight_one"] == 2
+    assert scheduled_dates[curr_datetime]["weight_two"] == 0
 
     # Next day (Jan 6)
     second_day = curr_datetime + timedelta(days=1)
     assert second_day in scheduled_dates
-    assert (
-        scheduled_dates[second_day].count("weight_one") == 0
-        and scheduled_dates[second_day].count("weight_two") == 1
-    )
+    assert scheduled_dates[second_day]["weight_one"] == 0
+    assert scheduled_dates[second_day]["weight_two"] == 1
 
     # Day after next (Jan 7)
     third_day = curr_datetime + timedelta(days=2)
     assert third_day in scheduled_dates
-    assert (
-        scheduled_dates[third_day].count("weight_one") == 0
-        and scheduled_dates[third_day].count("weight_two") == 1
-    )
+    assert scheduled_dates[third_day]["weight_one"] == 0
+    assert scheduled_dates[third_day]["weight_two"] == 1
 
 
 def test_reschedule_with_priority(
@@ -262,50 +239,27 @@ def test_reschedule_with_priority(
 
     assert fake_api.update_task.call_count == 4
 
-    # Group tasks by due_datetime
-    calls = fake_api.update_task.call_args_list
-    scheduled_dates: dict[datetime, list[str]] = defaultdict(list)
-
-    for call in calls:
-        task_id = call.args[0]
-        due_datetime = (
-            call.kwargs["due_datetime"]
-            if "due_datetime" in call.kwargs
-            else datetime.combine(call.kwargs["due_date"], datetime.min.time())
-        )
-
-        matching_task = next(t for t in tasks if t.id == task_id)
-        task_label = (
-            next(label for label in matching_task.labels)
-            if matching_task.labels
-            else None
-        )
-
-        if task_label:
-            scheduled_dates[due_datetime].append(task_label)
+    # Get distribution of scheduled tasks
+    scheduled_dates = fake_api.get_distribution()
 
     # TODO: Assert that the high priority task is the one rescheduled to the current day
 
     # Current day (Jan 5)
     assert curr_datetime in scheduled_dates
-    assert scheduled_dates[curr_datetime].count("weight_one") == 0
-    assert scheduled_dates[curr_datetime].count("weight_two") == 1
+    assert scheduled_dates[curr_datetime]["weight_one"] == 0
+    assert scheduled_dates[curr_datetime]["weight_two"] == 1
 
     # Next day (Jan 6)
     second_day = curr_datetime + timedelta(days=1)
     assert second_day in scheduled_dates
-    assert (
-        scheduled_dates[second_day].count("weight_one") == 2
-        and scheduled_dates[second_day].count("weight_two") == 0
-    )
+    assert scheduled_dates[second_day]["weight_one"] == 2
+    assert scheduled_dates[second_day]["weight_two"] == 0
 
     # Day after next (Jan 7)
     third_day = curr_datetime + timedelta(days=2)
     assert third_day in scheduled_dates
-    assert (
-        scheduled_dates[third_day].count("weight_one") == 0
-        and scheduled_dates[third_day].count("weight_two") == 1
-    )
+    assert scheduled_dates[third_day]["weight_one"] == 0
+    assert scheduled_dates[third_day]["weight_two"] == 1
 
 
 def test_reschedule_with_rules_and_daily_weight(
@@ -329,64 +283,37 @@ def test_reschedule_with_rules_and_daily_weight(
 
     assert fake_api.update_task.call_count == 5
 
-    # Group tasks by due_datetime
-    calls = fake_api.update_task.call_args_list
-    scheduled_dates: dict[datetime, list[str]] = defaultdict(list)
-
-    for call in calls:
-        task_id = call.args[0]
-        due_datetime = (
-            call.kwargs["due_datetime"]
-            if "due_datetime" in call.kwargs
-            else datetime.combine(call.kwargs["due_date"], datetime.min.time())
-        )
-
-        matching_task = next(t for t in tasks if t.id == task_id)
-        task_label = (
-            next(label for label in matching_task.labels)
-            if matching_task.labels
-            else None
-        )
-
-        if task_label:
-            scheduled_dates[due_datetime].append(task_label)
+    # Get distribution of scheduled tasks
+    scheduled_dates = fake_api.get_distribution()
 
     # Current day (Jan 5)
     assert curr_datetime not in scheduled_dates
-    assert scheduled_dates[curr_datetime].count("weight_one") == 0
-    assert scheduled_dates[curr_datetime].count("weight_two") == 0
+    assert scheduled_dates[curr_datetime]["weight_one"] == 0
+    assert scheduled_dates[curr_datetime]["weight_two"] == 0
 
     # Next day (Jan 6)
     second_day = curr_datetime + timedelta(days=1)
     assert second_day in scheduled_dates
-    assert (
-        scheduled_dates[second_day].count("weight_one") == 1
-        and scheduled_dates[second_day].count("weight_two") == 0
-    )
+    assert scheduled_dates[second_day]["weight_one"] == 1
+    assert scheduled_dates[second_day]["weight_two"] == 0
 
     # Day after next (Jan 7)
     third_day = curr_datetime + timedelta(days=2)
     assert third_day in scheduled_dates
-    assert (
-        scheduled_dates[third_day].count("weight_one") == 2
-        and scheduled_dates[third_day].count("weight_two") == 0
-    )
+    assert scheduled_dates[third_day]["weight_one"] == 2
+    assert scheduled_dates[third_day]["weight_two"] == 0
 
     # Day...after that
     fourth_day = curr_datetime + timedelta(days=3)
     assert fourth_day in scheduled_dates
-    assert (
-        scheduled_dates[fourth_day].count("weight_one") == 0
-        and scheduled_dates[fourth_day].count("weight_two") == 1
-    )
+    assert scheduled_dates[fourth_day]["weight_one"] == 0
+    assert scheduled_dates[fourth_day]["weight_two"] == 1
 
     # ...
     fifth_day = curr_datetime + timedelta(days=4)
     assert fifth_day in scheduled_dates
-    assert (
-        scheduled_dates[fifth_day].count("weight_one") == 0
-        and scheduled_dates[fifth_day].count("weight_two") == 1
-    )
+    assert scheduled_dates[fifth_day]["weight_one"] == 0
+    assert scheduled_dates[fifth_day]["weight_two"] == 1
 
 
 def test_dry_run_doesn_not_update_tasks(
