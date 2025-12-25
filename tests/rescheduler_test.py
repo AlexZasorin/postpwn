@@ -1,7 +1,4 @@
-import logging
-import sys
 from asyncio import AbstractEventLoop
-from collections import defaultdict
 from datetime import datetime, timedelta
 
 import pytest
@@ -196,7 +193,7 @@ def test_reschedule_with_rules(
     assert fake_api.update_task.call_count == 4
 
     # Get distribution of scheduled tasks
-    scheduled_dates = fake_api.get_distribution()
+    scheduled_dates = fake_api.task_distribution()
 
     # Current day (Jan 5)
     assert curr_datetime in scheduled_dates
@@ -240,14 +237,14 @@ def test_reschedule_with_priority(
     assert fake_api.update_task.call_count == 4
 
     # Get distribution of scheduled tasks
-    scheduled_dates = fake_api.get_distribution()
-
-    # TODO: Assert that the high priority task is the one rescheduled to the current day
+    scheduled_dates = fake_api.task_distribution()
 
     # Current day (Jan 5)
     assert curr_datetime in scheduled_dates
     assert scheduled_dates[curr_datetime]["weight_one"] == 0
     assert scheduled_dates[curr_datetime]["weight_two"] == 1
+
+    assert scheduled_dates[curr_datetime]["4"] == 1  # High priority task
 
     # Next day (Jan 6)
     second_day = curr_datetime + timedelta(days=1)
@@ -255,11 +252,15 @@ def test_reschedule_with_priority(
     assert scheduled_dates[second_day]["weight_one"] == 2
     assert scheduled_dates[second_day]["weight_two"] == 0
 
+    assert scheduled_dates[second_day]["1"] == 2
+
     # Day after next (Jan 7)
     third_day = curr_datetime + timedelta(days=2)
     assert third_day in scheduled_dates
     assert scheduled_dates[third_day]["weight_one"] == 0
     assert scheduled_dates[third_day]["weight_two"] == 1
+
+    assert scheduled_dates[third_day]["1"] == 1
 
 
 def test_reschedule_with_rules_and_daily_weight(
@@ -284,7 +285,7 @@ def test_reschedule_with_rules_and_daily_weight(
     assert fake_api.update_task.call_count == 5
 
     # Get distribution of scheduled tasks
-    scheduled_dates = fake_api.get_distribution()
+    scheduled_dates = fake_api.task_distribution()
 
     # Current day (Jan 5)
     assert curr_datetime not in scheduled_dates

@@ -9,6 +9,8 @@ from todoist_api_python.models import Task
 
 from helpers.data_generators import build_task
 
+type TaskDistribution = dict[str, int]
+
 
 async def create_task_generator(
     tasks: list[Task], empty_query: bool = False
@@ -31,8 +33,10 @@ class FakeTodoistAPI:
     def setup_tasks(self, tasks: list[Task]) -> None:
         self.tasks.extend(tasks)
 
-    def get_distribution(self) -> dict[datetime, dict[str, int]]:
-        scheduled_dates: dict[datetime, dict[str, int]] = defaultdict(
+    def task_distribution(
+        self,
+    ) -> dict[datetime, TaskDistribution]:
+        scheduled_dates: dict[datetime, TaskDistribution] = defaultdict(
             lambda: defaultdict(int)
         )
 
@@ -53,6 +57,8 @@ class FakeTodoistAPI:
 
             if task_label:
                 scheduled_dates[due_datetime][task_label] += 1
+
+            scheduled_dates[due_datetime][str(matching_task.priority)] += 1
 
         return scheduled_dates
 

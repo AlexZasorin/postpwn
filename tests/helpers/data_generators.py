@@ -81,8 +81,8 @@ def build_due(
 def build_duration(properties: Optional[dict[str, Any]] = None) -> Duration:
     defaults = Duration(
         amount=generate_int(),
-        # TODO: Create a separate fixture for generating random string literals
-        # instead of using text fixture
+        # TODO: Create a separate fixture for generating random string
+        # literals instead of using text fixture
         unit=random.choice(["minute", "day"]),
     )
 
