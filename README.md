@@ -118,28 +118,25 @@ capacity:
 
 ## TODO
 
+- [ ] Move my deployment out of the main code
 - [ ] Add tests
-  - [ ] Refactor FakeTodoistAPI to create "distribution" of final task
-  dates for easier comparison, refactor test cases to use this
-  - [ ] Test that priority tasks are scheduled earlier
   - [ ] Retry test
   - [ ] Test cron scheduling
   - [ ] Timezone test
-- [ ] Make logs not look like ass lol
 - [ ] Switch to toml config???
   - [ ] Merge CLI args and rules config into a unified configuration
 - [ ] Allow disabling "smart" rescheduling
-- [ ] Use Session from requests to implement retry logic?
-- [ ] Catch improper cron string
-- [ ] Try using V4 API of scheduler for typing
+- [ ] Allow considering of tasks with matching label, but not matching filter
+- [ ] Allow "punting" of tasks further than today
 - [ ] Add limits as alternative to weights
-- [ ] Add semantic release
-- [ ] Publish executable using PyInstaller
+- [ ] Allow overriding the default values for each priority
 - [ ] Add value to WeightedTask and increase value for older tasks, make
 optional
-- [ ] Allow overriding the default values for each priority
-- [ ] Move my deployment out of the main code
-- [ ] Allow "punting" of tasks further than today
+- [ ] Add semantic release
+- [ ] Publish executable using PyInstaller
+- [ ] Catch improper cron string
+- [ ] Use Session from requests to implement retry logic?
+- [ ] Try using V4 API of scheduler for typing
 
 ## License
 
