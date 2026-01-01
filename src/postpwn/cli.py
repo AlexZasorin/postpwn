@@ -2,7 +2,6 @@ import asyncio
 import logging
 import os
 import re
-import sys
 from asyncio import AbstractEventLoop
 from datetime import date, datetime
 from typing import TypedDict, Unpack
@@ -25,10 +24,8 @@ from postpwn.validation import CRON_SCHEDULE_REGEX
 
 _ = load_dotenv()
 
-logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
-
-logger = logging.getLogger("postpwn")
-logger.setLevel(logging.DEBUG)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 class RescheduleParams(TypedDict):

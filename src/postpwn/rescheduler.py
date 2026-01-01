@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import os
-import sys
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from typing import Any, Coroutine, Unpack
@@ -24,10 +23,8 @@ from postpwn.weighted_task import WeightedTask
 
 _ = load_dotenv()
 
-logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
-
-logger = logging.getLogger("postpwn")
-logger.setLevel(logging.DEBUG)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 
 def weighted_adapter(task: Task, rules: list[Rule] | None) -> WeightedTask | None:

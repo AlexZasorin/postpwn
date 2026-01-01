@@ -1,10 +1,18 @@
 import asyncio
 from asyncio import AbstractEventLoop
+import logging
 from typing import Generator
 
 import pytest
 
 from postpwn.cli import RescheduleParams
+
+
+@pytest.fixture(autouse=True)
+def setup_logging():
+    logging.basicConfig(
+        level=logging.DEBUG, format="%(name)s [%(levelname)s]: %(message)s"
+    )
 
 
 @pytest.fixture

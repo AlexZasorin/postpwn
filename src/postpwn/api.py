@@ -1,6 +1,5 @@
 from datetime import date, datetime
 import logging
-import sys
 from typing import (
     Annotated,
     AsyncGenerator,
@@ -47,9 +46,7 @@ class UpdateTaskInput(TypedDict):
     deadline_lang: NotRequired[LanguageCode]
 
 
-logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
-
-logger = logging.getLogger("postpwn")
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 

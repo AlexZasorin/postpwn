@@ -1,5 +1,4 @@
 import logging
-import sys
 from asyncio import AbstractEventLoop
 from datetime import datetime, timedelta
 
@@ -20,10 +19,7 @@ from postpwn.cli import RescheduleParams, postpwn
 # only reschedule according to the first rule that matches
 
 
-logging.basicConfig(stream=sys.stderr, level=logging.WARNING)
-
-logger = logging.getLogger("postpwn")
-logger.setLevel(logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
