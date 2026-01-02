@@ -146,10 +146,12 @@ async def reschedule(
     tasks = await get_tasks_with_retry(api, filter)
 
     # Add weights based on rules
-    weighted_tasks = [weighted_adapter(task, rules) for task in tasks]
+    weighted_tasks_results = [weighted_adapter(task, rules) for task in tasks]
 
     # Filter out None values
-    weighted_tasks = [task for task in weighted_tasks if task is not None]
+    weighted_tasks: list[WeightedTask] = [
+        task for task in weighted_tasks_results if task is not None
+    ]
 
     weighted_tasks.sort(
         key=lambda task: datetime.fromisoformat(str(task.due.date))  # type:ignore[call-arg]
