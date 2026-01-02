@@ -27,6 +27,10 @@ def test_no_token_provided(loop: AbstractEventLoop, params: RescheduleParams) ->
     params["token"] = None
 
     fake_api = FakeTodoistAPI("")
+    # Set up filter_tasks to raise HTTPError for invalid token
+    fake_api.filter_tasks.side_effect = HTTPError(
+        "401 Client Error: Unauthorized for url: idk"
+    )
 
     curr_datetime = datetime(2022, 1, 5, 12, 0, 0)
 
@@ -55,6 +59,12 @@ def test_no_filter_provided(
     """when no filter is provided, it does nothing"""
 
     params["filter"] = ""
+
+    # Set up filter_tasks to return empty list for empty query
+    async def empty_generator():  # pyright: ignore[reportUnknownParameterType]
+        yield []
+
+    fake_api.filter_tasks.side_effect = lambda **kwargs: empty_generator()  # pyright: ignore[reportUnknownLambdaType]
 
     curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
 

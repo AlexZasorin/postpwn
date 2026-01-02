@@ -1,10 +1,9 @@
 from collections import defaultdict
 from datetime import datetime
-from typing import Annotated, AsyncGenerator
+from typing import AsyncGenerator
 from unittest.mock import AsyncMock
 
-from annotated_types import Ge, Le, MaxLen
-from requests import HTTPError, Session
+from requests import Session
 from todoist_api_python.models import Task
 
 from helpers.data_generators import build_task
@@ -28,6 +27,9 @@ class FakeTodoistAPI:
         self.tasks: list[Task] = []
         self.update_task = AsyncMock(
             return_value=build_task({"id": "mock_id", "content": "Updated Task"})
+        )
+        self.filter_tasks = AsyncMock(
+            side_effect=lambda **kwargs: create_task_generator(self.tasks)  # pyright: ignore[reportUnknownLambdaType]
         )
 
     def setup_tasks(self, tasks: list[Task]) -> None:
@@ -61,16 +63,3 @@ class FakeTodoistAPI:
             scheduled_dates[due_datetime][str(matching_task.priority)] += 1
 
         return scheduled_dates
-
-    async def filter_tasks(
-        self,
-        *,
-        query: Annotated[str, MaxLen(1024)] | None = None,
-        lang: str | None = None,
-        limit: Annotated[int, Ge(1), Le(200)] | None = None,
-    ) -> AsyncGenerator[list[Task], None]:
-        if self.token != "VALID_TOKEN":
-            raise HTTPError("401 Client Error: Unauthorized for url: idk")
-
-        empty_query = query == ""
-        return create_task_generator(self.tasks, empty_query)
