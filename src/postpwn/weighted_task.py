@@ -23,10 +23,10 @@ class WeightedTask(Task):
             order=task.order,
             assignee_id=task.assignee_id,
             assigner_id=task.assigner_id,
-            completed_at=task.completed_at,  # type: ignore[call-arg]
+            completed_at=task.completed_at,  # pyright: ignore[reportUnknownMemberType]
             creator_id=task.creator_id,
-            created_at=task.created_at,  # type: ignore[call-arg]
-            updated_at=task.updated_at,  # type: ignore[call-arg]
+            created_at=task.created_at,  # pyright: ignore[reportUnknownMemberType]
+            updated_at=task.updated_at,  # pyright: ignore[reportUnknownMemberType]
         )
 
         self.weight = weight

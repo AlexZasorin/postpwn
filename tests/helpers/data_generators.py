@@ -55,8 +55,8 @@ def build_due(
     properties: Optional[dict[str, Any]] = None, is_datetime: bool = False
 ) -> Due:
     defaults = Due(
-        date=(
-            DateTimePattern.fromisoformat(  # type: ignore[call-arg]
+        date=(  # pyright: ignore[reportArgumentType]
+            DateTimePattern.fromisoformat(
                 generate_datetime().strftime("%Y-%m-%dT%H:%M:%S")
             )
             if is_datetime
@@ -99,14 +99,14 @@ def build_duration(properties: Optional[dict[str, Any]] = None) -> Duration:
 
 def build_deadline(properties: Optional[dict[str, Any]] = None) -> Deadline:
     defaults = Deadline(
-        date=random.choice(
+        date=random.choice(  # pyright: ignore[reportArgumentType]
             [
                 DatePattern.fromisoformat(generate_date().strftime("%Y-%m-%d")),
                 DateTimePattern.fromisoformat(
                     generate_datetime().strftime("%Y-%m-%dT%H:%M:%S")
                 ),
             ]
-        ),  # type: ignore[call-arg]
+        ),
         lang="en",
     )
 
@@ -142,8 +142,8 @@ def build_task(
         assigner_id=generate_id(),
         completed_at=None,
         creator_id=generate_id(),
-        created_at=generate_datetime(),  # type: ignore[call-arg]
-        updated_at=generate_datetime(),  # type: ignore[call-arg]
+        created_at=generate_datetime(),  # pyright: ignore[reportArgumentType]
+        updated_at=generate_datetime(),  # pyright: ignore[reportArgumentType]
     )
 
     if properties is None:

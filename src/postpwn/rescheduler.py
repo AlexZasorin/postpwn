@@ -58,16 +58,18 @@ def fill_my_sack(
 
     for task in tasks:
         for curr_capacity in range(max_weight, 0, -1):
-            if task.weight <= curr_capacity:
-                take = values[curr_capacity - task.weight] + task.priority
-                dont_take = values[curr_capacity]
+            if task.weight > curr_capacity:
+                continue
 
-                if take > dont_take:
-                    values[curr_capacity] = take
-                    selected[curr_capacity] = selected[
-                        curr_capacity - task.weight
-                    ].copy()
-                    selected[curr_capacity].append(task)
+            take = values[curr_capacity - task.weight] + task.priority
+            dont_take = values[curr_capacity]
+
+            if take <= dont_take:
+                continue
+
+            values[curr_capacity] = take
+            selected[curr_capacity] = selected[curr_capacity - task.weight].copy()
+            selected[curr_capacity].append(task)
 
     return selected[max_weight]
 
@@ -75,8 +77,8 @@ def fill_my_sack(
 def get_update_params(new_date: date, due: Due) -> UpdateTaskInput:
     update_params: UpdateTaskInput = {}
 
-    if isinstance(due.date, datetime):  # type:ignore[call-arg]
-        time = datetime.strptime(str(due.date), "%Y-%m-%d %H:%M:%S").time()  # type:ignore[call-arg]
+    if isinstance(due.date, datetime):  # pyright: ignore[reportUnknownMemberType]
+        time = datetime.strptime(str(due.date), "%Y-%m-%d %H:%M:%S").time()  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
         new_datetime = datetime.strptime(f"{new_date} {time}", "%Y-%m-%d %H:%M:%S")
         update_params["due_datetime"] = new_datetime
     else:
@@ -154,7 +156,7 @@ async def reschedule(
     ]
 
     weighted_tasks.sort(
-        key=lambda task: datetime.fromisoformat(str(task.due.date))  # type:ignore[call-arg]
+        key=lambda task: datetime.fromisoformat(str(task.due.date))  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
         if task.due
         else datetime.max.date(),
     )
@@ -173,23 +175,30 @@ async def reschedule(
     update_coroutines: list[Coroutine[Any, Any, Task]] = []
     for new_date, weighted_tasks in new_schedule.items():
         for task in weighted_tasks:
-            if task.due and (
-                (isinstance(task.due.date, date) and task.due.date != new_date)  # type:ignore[call-arg]
-                or (
-                    isinstance(task.due.date, datetime)  # type:ignore[call-arg]
-                    and task.due.date.date() != new_date  # type:ignore[call-arg]
+            # (p and ((q and r) or (s and t)))
+            # (!p or ((!q or !r) and (!s or !t)))
+            if not task.due or (
+                task.due.date == new_date  # pyright: ignore[reportUnknownMemberType]
+                and (
+                    not isinstance(task.due.date, datetime)  # pyright: ignore[reportUnknownMemberType]
+                    or task.due.date.date() == new_date  # pyright: ignore[reportUnknownMemberType]
                 )
             ):
-                update_params = get_update_params(new_date, task.due)
+                continue
 
-                logger.info(
-                    f"Rescheduling {task.content} from {task.due.date} to {update_params['due_date'] if 'due_date' in update_params else update_params['due_datetime']}"  # type:ignore[call-arg]
-                )
-                if not dry_run:
-                    update_task_with_retry = build_retry(update_task)
-                    update_coroutines.append(
-                        update_task_with_retry(api, task.id, **update_params)
-                    )
+            update_params = get_update_params(new_date, task.due)
+
+            logger.info(
+                f"Rescheduling {task.content} from {task.due.date} to {update_params['due_date'] if 'due_date' in update_params else update_params['due_datetime']}"  # pyright: ignore[reportUnknownMemberType, reportTypedDictNotRequiredAccess]
+            )
+
+            if dry_run:
+                continue
+
+            update_task_with_retry = build_retry(update_task)
+            update_coroutines.append(
+                update_task_with_retry(api, task.id, **update_params)
+            )
 
     # Wait for all update tasks to complete
     if update_coroutines:
