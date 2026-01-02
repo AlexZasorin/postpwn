@@ -32,7 +32,7 @@ def weighted_adapter(task: Task, rules: list[Rule] | None) -> WeightedTask | Non
         return WeightedTask(task, 0)
 
     filter_map: dict[str, int] = {
-        rule["filter"][1:]: rule["weight"] for rule in rules if "weight" in rule
+        rule.filter[1:]: rule.weight for rule in rules if rule.weight is not None
     }
 
     if not task.labels:

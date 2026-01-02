@@ -159,9 +159,9 @@ def postpwn(
         )
 
         for rule in rules:
-            if rule.get("weight", 0) > weight_limit:
+            if (rule.weight or 0) > weight_limit:
                 raise ValueError(
-                    f"Invalid rule config: {rule['filter']} exceeds max weight {weight_limit}"
+                    f"Invalid rule config: {rule.filter} exceeds max weight {weight_limit}"
                 )
 
     logger.info(f"Rules: {rules}")

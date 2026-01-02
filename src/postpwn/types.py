@@ -1,11 +1,20 @@
-from pydantic import BaseModel
-from typing import Required, TypedDict
+from typing import Annotated
+
+from pydantic import BaseModel, Field, StringConstraints
 
 
-class Rule(TypedDict, total=False):
-    filter: Required[str]
-    limit: int
-    weight: int
+class Rule(BaseModel):
+    filter: Annotated[
+        str,
+        StringConstraints(strip_whitespace=True, min_length=1),
+        Field(description="Filter string for selecting tasks"),
+    ]
+    limit: int | None = Field(
+        None, gt=0, description="Optional limit for number of tasks"
+    )
+    weight: int | None = Field(
+        None, gt=0, description="Optional weight for task prioritization"
+    )
 
 
 class WeightConfig(BaseModel):
