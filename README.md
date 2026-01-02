@@ -118,11 +118,17 @@ capacity:
 
 ## TODO
 
-- [ ] Move my deployment out of the main code
+- [ ] Catch improper cron string
 - [ ] Add tests
-  - [ ] Retry test
   - [ ] Test cron scheduling
-  - [ ] Timezone test
+  - [ ] Timezone test, assert tasks are rescheduled in correct timezone
+  - [ ] DST test, adding dates across DST change
+  - [ ] Invalid input tests
+    - bad rules
+    - bad filter
+    - bad token
+    - bad cron string
+- [ ] Switch to pendulum
 - [ ] Switch to toml config???
   - [ ] Merge CLI args and rules config into a unified configuration
 - [ ] Allow disabling "smart" rescheduling
@@ -133,10 +139,8 @@ capacity:
 - [ ] Add value to WeightedTask and increase value for older tasks, make
 optional
 - [ ] Add semantic release
-- [ ] Publish executable using PyInstaller
-- [ ] Catch improper cron string
+- [ ] Publish executable using PyOxidizer
 - [ ] Use Session from requests to implement retry logic?
-- [ ] Try using V4 API of scheduler for typing
 
 ## License
 
