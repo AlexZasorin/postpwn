@@ -4,6 +4,9 @@
 run *args='':
     uv run postpwn {{args}}
 
+@typecheck:
+  uv run basedpyright
+
 @lint:
   uv run ruff check
 
@@ -16,6 +19,6 @@ run *args='':
 @format:
   uv run ruff format
 
-@verify: check-formatting lint test
-  echo "Format, lint, and test checks passed!"
+@verify: check-formatting lint typecheck test
+  echo "Format, lint, type, and test checks passed!"
   
