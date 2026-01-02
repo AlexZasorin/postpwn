@@ -1,6 +1,8 @@
+import asyncio
 import logging
 from asyncio import AbstractEventLoop
 from datetime import datetime, timedelta
+from unittest.mock import AsyncMock
 
 import pytest
 from helpers.data_generators import build_task
@@ -9,9 +11,9 @@ from helpers.set_env import set_env
 from requests import HTTPError
 
 from postpwn.cli import RescheduleParams, postpwn
+from postpwn.rescheduler import build_retry
 
 # TODO: Tests to make:
-# Medium/Hard - Application should retry on failure
 # Hard - Passing in a valid cron string triggers rescheduling on that cron schedule and doesn't raise an error
 # Hard - Test this as part of an E2E test? - When time zone is specified, tasks should be rescheduled properly according to that time zone
 
@@ -331,3 +333,61 @@ def test_dry_run_doesn_not_update_tasks(
         postpwn(fake_api, loop, curr_datetime, **params)
 
     assert fake_api.update_task.call_count == 0
+
+
+@pytest.mark.asyncio
+async def test_retries_on_failure() -> None:
+    """when function fails once then succeeds, it retries and returns result"""
+
+    async def success_generator():
+        yield [{"id": "123", "content": "Test"}]
+
+    # Create mock that fails 2 times, then succeeds
+    mock_func = AsyncMock(
+        side_effect=[
+            HTTPError("Fail 1"),
+            success_generator(),
+        ]
+    )
+
+    retrying_func = build_retry(mock_func)
+
+    with set_env({"RETRY_ATTEMPTS": "2"}):
+        result = await retrying_func(None, "test")
+        tasks = []
+        async for task_list in result:
+            tasks.extend(task_list)  # pyright: ignore[reportUnknownMemberType]
+
+    assert mock_func.call_count == 2
+    assert len(tasks) == 1  # pyright: ignore[reportUnknownArgumentType]
+
+
+@pytest.mark.asyncio
+async def test_retries_exhaust_then_raises() -> None:
+    """when function fails more than max retries, it raises the final error"""
+
+    # Mock that always fails
+    mock_func = AsyncMock(side_effect=HTTPError("Permanent failure"))
+    retrying_func = build_retry(mock_func)
+
+    with pytest.raises(HTTPError, match="Permanent failure"):
+        with set_env({"RETRY_ATTEMPTS": "2"}):
+            await retrying_func(None, "test")
+
+
+@pytest.mark.asyncio
+async def test_retry_respects_env_variable() -> None:
+    """when RETRY_ATTEMPTS is set, it retries that many times"""
+
+    # Mock that always fails
+    mock_func = AsyncMock(side_effect=HTTPError("Always fails"))
+
+    with set_env({"RETRY_ATTEMPTS": "3"}):
+        # build_retry reads RETRY_ATTEMPTS at creation time
+        retrying_func = build_retry(mock_func)
+        try:
+            await retrying_func(None, "test")
+        except HTTPError:
+            pass
+
+    assert mock_func.call_count == 3
