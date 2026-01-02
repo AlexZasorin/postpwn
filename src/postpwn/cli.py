@@ -15,6 +15,7 @@ from apscheduler.triggers.cron import (  # pyright: ignore[reportMissingTypeStub
     CronTrigger,
 )
 from dotenv import load_dotenv
+from pydantic import ValidationError
 from todoist_api_python.api_async import TodoistAPIAsync
 
 from postpwn.api import TodoistAPIProtocol
@@ -136,10 +137,15 @@ def postpwn(
 
     if kwargs["rules"] and os.path.exists(kwargs["rules"]):
         logger.info(f"Loading rules from {kwargs['rules']}")
-        with open(kwargs["rules"]) as f:
-            schedule_config = ScheduleConfig.model_validate_json(f.read())
-            max_weight = schedule_config.max_weight
-            rules = schedule_config.rules
+        try:
+            with open(kwargs["rules"]) as f:
+                schedule_config = ScheduleConfig.model_validate_json(f.read())
+                max_weight = schedule_config.max_weight
+                rules = schedule_config.rules
+        except ValidationError as e:
+            raise ValueError(
+                f"Invalid rules file '{kwargs['rules']}': {e.error_count()} validation error(s) found.\n{e}"
+            ) from e
     else:
         logger.info("No rules provided, using defaults.")
         max_weight = 10
