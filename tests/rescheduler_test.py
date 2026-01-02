@@ -13,7 +13,6 @@ from postpwn.cli import RescheduleParams, postpwn
 from postpwn.rescheduler import build_retry
 
 # TODO: Tests to make:
-# Hard - Passing in a valid cron string triggers rescheduling on that cron schedule and doesn't raise an error
 # Hard - Test this as part of an E2E test? - When time zone is specified, tasks should be rescheduled properly according to that time zone
 
 # TODO: How to treat items with overlapping labels? - Check for them, and then
