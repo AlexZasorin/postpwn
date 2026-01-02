@@ -12,12 +12,6 @@ from requests import HTTPError
 from postpwn.cli import RescheduleParams, postpwn
 from postpwn.rescheduler import build_retry
 
-# TODO: Tests to make:
-# Hard - Test this as part of an E2E test? - When time zone is specified, tasks should be rescheduled properly according to that time zone
-
-# TODO: How to treat items with overlapping labels? - Check for them, and then
-# only reschedule according to the first rule that matches
-
 
 logger = logging.getLogger(__name__)
 
@@ -331,6 +325,37 @@ def test_dry_run_doesn_not_update_tasks(
         postpwn(fake_api, loop, curr_datetime, **params)
 
     assert fake_api.update_task.call_count == 0
+
+
+def test_overlapping_labels_uses_first_match(
+    loop: AbstractEventLoop, params: RescheduleParams, fake_api: FakeTodoistAPI
+) -> None:
+    """when task has multiple labels matching different rules, it uses the first label in task.labels that matches"""
+
+    params["rules"] = "tests/fixtures/daily_max_weight_rules.json"
+
+    task_weight_one_first = build_task({"labels": ["weight_two", "weight_one"]})
+    task_weight_two_first = build_task({"labels": ["weight_two"]})
+
+    fake_api.setup_tasks([task_weight_one_first, task_weight_two_first])
+
+    curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
+
+    with set_env({"RETRY_ATTEMPTS": "1"}):
+        postpwn(fake_api, loop, curr_datetime, **params)
+
+    # Both tasks should be rescheduled
+    assert fake_api.update_task.call_count == 2
+
+    scheduled_dates = fake_api.task_distribution()
+
+    wednesday = curr_datetime + timedelta(days=3)
+    assert scheduled_dates[wednesday]["weight_two"] == 1
+    assert scheduled_dates[wednesday].get("weight_one", 0) == 0
+
+    thursday = curr_datetime + timedelta(days=4)
+    assert scheduled_dates[thursday]["weight_two"] == 1
+    assert scheduled_dates[thursday].get("weight_one", 0) == 0
 
 
 @pytest.mark.asyncio
