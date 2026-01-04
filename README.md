@@ -120,7 +120,6 @@ capacity:
 
 - [ ] Catch improper cron string
 - [ ] Add tests
-  - [ ] Test cron scheduling
   - [ ] Timezone test, assert tasks are rescheduled in correct timezone
   - [ ] DST test, adding dates across DST change
   - [ ] Invalid input tests
