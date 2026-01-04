@@ -26,12 +26,13 @@ async def test_schedule_registers_job_and_executes() -> None:
     scheduler = await run_schedule(
         api=fake_api,
         max_weight=10,
-        filter="test",
+        filter="standard-filter-goes-here",
         rules=None,
         dry_run=False,
         time_zone="UTC",
         schedule=cron_schedule,
         curr_date=curr_date,
+        consider_all_labeled=False,
     )
 
     try:

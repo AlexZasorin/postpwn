@@ -1,5 +1,6 @@
 from collections import defaultdict
 from datetime import datetime
+import logging
 from typing import AsyncGenerator
 from unittest.mock import AsyncMock
 
@@ -12,13 +13,18 @@ type TaskDistribution = dict[str, int]
 
 
 async def create_task_generator(
-    tasks: list[Task], empty_query: bool = False
+    tasks: list[Task], filter: str
 ) -> AsyncGenerator[list[Task], None]:
-    if empty_query:
+    logging.info(f"Filtering tasks with filter: {filter}")
+    if filter == "":
         yield []
+
+    if filter == "standard-filter-goes-here":
+        yield tasks
         return
 
-    yield tasks
+    filtered_tasks = [task for task in tasks if task.labels and filter in task.labels]
+    yield filtered_tasks
 
 
 class FakeTodoistAPI:
@@ -29,7 +35,10 @@ class FakeTodoistAPI:
             return_value=build_task({"id": "mock_id", "content": "Updated Task"})
         )
         self.filter_tasks = AsyncMock(
-            side_effect=lambda **kwargs: create_task_generator(self.tasks)  # pyright: ignore[reportUnknownLambdaType]
+            side_effect=lambda **kwargs: create_task_generator(  # pyright: ignore[reportUnknownLambdaType]
+                self.tasks,
+                kwargs["query"],  # pyright: ignore[reportUnknownArgumentType]
+            )
         )
 
     def setup_tasks(self, tasks: list[Task]) -> None:
