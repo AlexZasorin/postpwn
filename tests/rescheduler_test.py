@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from unittest.mock import AsyncMock
 
 import pytest
-from helpers.data_generators import build_task
+from helpers.data_generators import build_due, build_task
 from helpers.fake_api import FakeTodoistAPI
 from helpers.set_env import set_env
 from requests import HTTPError
@@ -366,6 +366,61 @@ def test_overlapping_labels_uses_first_match(
     thursday = curr_datetime + timedelta(days=4)
     assert scheduled_dates[thursday]["weight_two"] == 1
     assert scheduled_dates[thursday].get("weight_one", 0) == 0
+
+
+def test_consider_all_labeled_tasks_flag(
+    loop: AbstractEventLoop, params: RescheduleParams, fake_api: FakeTodoistAPI
+) -> None:
+    """when consider_all_labeled is set, it reschedules tasks while considering the weight of all labeled tasks, including those that don't match the filter"""
+
+    params["rules"] = "tests/fixtures/daily_max_weight_rules.json"
+
+    # Overrides filter to only match weight_one tasks
+    params["filter"] = "weight_one"
+
+    curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
+
+    # Two tasks that match the filter
+    matching_tasks = [
+        build_task(
+            {
+                "labels": ["weight_one"],
+                "due": build_due({"date": curr_datetime}, is_datetime=True),
+            }
+        )
+        for _ in range(2)
+    ]
+    non_matching_task = build_task({"labels": ["weight_two"]})
+
+    fake_api.setup_tasks([*matching_tasks, non_matching_task])
+
+    curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
+
+    with set_env({"RETRY_ATTEMPTS": "1"}):
+        postpwn(fake_api, loop, curr_datetime, **params)
+
+    # Both tasks should be rescheduled
+    assert fake_api.update_task.call_count == 2
+
+    scheduled_dates = fake_api.task_distribution()
+
+    # Current day (Jan 5)
+    # Results should reflect that weight_two task was NOT rescheduled
+    assert curr_datetime not in scheduled_dates
+    assert scheduled_dates[curr_datetime]["weight_one"] == 0
+    assert scheduled_dates[curr_datetime]["weight_two"] == 0
+
+    # Next day (Jan 6)
+    second_day = curr_datetime + timedelta(days=1)
+    assert second_day in scheduled_dates
+    assert scheduled_dates[second_day]["weight_one"] == 1
+    assert scheduled_dates[second_day]["weight_two"] == 0
+
+    # Day after next (Jan 7)
+    third_day = curr_datetime + timedelta(days=2)
+    assert third_day in scheduled_dates
+    assert scheduled_dates[third_day]["weight_one"] == 1
+    assert scheduled_dates[third_day]["weight_two"] == 0
 
 
 @pytest.mark.asyncio
