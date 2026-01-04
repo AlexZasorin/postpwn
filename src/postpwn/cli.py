@@ -36,6 +36,7 @@ class RescheduleParams(TypedDict):
     token: str | None
     time_zone: str
     schedule: str | None
+    consider_all_labeled: bool
 
 
 async def run_schedule(
@@ -46,6 +47,7 @@ async def run_schedule(
     dry_run: bool,
     time_zone: str,
     schedule: str,
+    consider_all_labeled: bool,
     curr_date: date | None = None,
 ) -> AsyncIOScheduler:
     logger.info(f"Running on schedule: {schedule}")
@@ -60,6 +62,7 @@ async def run_schedule(
             rules=rules,
             filter=filter,
             dry_run=dry_run,
+            consider_all_labeled=consider_all_labeled,
         )
 
     _ = scheduler.add_job(  # pyright: ignore[reportUnknownMemberType]
@@ -116,6 +119,12 @@ async def run_schedule(
     help="Cron schedule for rescheduling to run on a cadence.",
     default=None,
     type=str,
+)
+@click.option(
+    "--consider-all-labeled",
+    help="Consider all labeled tasks when rescheduling, not just those that match the filter. This option considers all labeled tasks when determining how much space is available in the schedule, but only reschedules tasks that match the filter.",
+    default=False,
+    type=bool,
 )
 def cli(**kwargs: Unpack[RescheduleParams]) -> None:
     logger.debug(kwargs)
@@ -179,6 +188,7 @@ def postpwn(
                 dry_run=kwargs["dry_run"],
                 time_zone=kwargs["time_zone"],
                 schedule=kwargs["schedule"],
+                consider_all_labeled=kwargs["consider_all_labeled"],
             )
         )
         try:
@@ -197,5 +207,6 @@ def postpwn(
             rules=rules,
             filter=kwargs["filter"],
             dry_run=kwargs["dry_run"],
+            consider_all_labeled=kwargs["consider_all_labeled"],
         )
     )

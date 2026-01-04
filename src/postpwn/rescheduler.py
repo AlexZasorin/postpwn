@@ -91,7 +91,22 @@ def get_update_params(new_date: date, due: Due) -> UpdateTaskInput:
     return update_params
 
 
-def get_weekday_weight(weight_config: WeightConfig | int, date: date) -> int:
+def calculate_weight_modifier(date: date, excluded_tasks: list[WeightedTask]):
+    # All tasks for current date
+    current_date_excluded_tasks = [
+        task
+        for task in excluded_tasks
+        if task.due and task.due.date == date  # pyright: ignore[reportUnknownMemberType]
+    ]
+
+    return sum((task.weight for task in current_date_excluded_tasks))
+
+
+def get_weekday_weight(
+    weight_config: WeightConfig | int,
+    date: date,
+    excluded_tasks: list[WeightedTask] | None,
+) -> int:
     if isinstance(weight_config, int):
         return weight_config
 
@@ -105,7 +120,11 @@ def get_weekday_weight(weight_config: WeightConfig | int, date: date) -> int:
         weight_config.sunday,
     ]
 
-    return weekday_mapping[date.weekday()]
+    weight_modifier = (
+        calculate_weight_modifier(date, excluded_tasks) if excluded_tasks else 0
+    )
+
+    return max(weekday_mapping[date.weekday()] - weight_modifier, 0)
 
 
 async def filter_tasks(api: TodoistAPIProtocol, query: str) -> list[Task]:
@@ -140,13 +159,13 @@ async def reschedule(
     max_weight: WeightConfig | int,
     time_zone: str,
     curr_date: date | None,
+    consider_all_labeled: bool,
     rules: list[Rule] | None = None,
     dry_run: bool = False,
 ) -> None:
     get_tasks_with_retry = build_retry(filter_tasks)
 
     tasks = await get_tasks_with_retry(api, filter)
-
     # Add weights based on rules
     weighted_tasks_results = [weighted_adapter(task, rules) for task in tasks]
 
@@ -161,10 +180,34 @@ async def reschedule(
         else datetime.max.date(),
     )
 
+    weighted_excluded_tasks: list[WeightedTask] = []
+    if consider_all_labeled:
+        excluded_tasks = [
+            task
+            for task in await get_tasks_with_retry(api, f"!({filter})")
+            if task not in tasks
+        ]
+
+        weighted_excluded_tasks_results = [
+            weighted_adapter(task, rules) for task in excluded_tasks
+        ]
+
+        weighted_excluded_tasks.append(
+            *[task for task in weighted_excluded_tasks_results if task is not None]
+        )
+
+        weighted_excluded_tasks.sort(
+            key=lambda task: datetime.fromisoformat(str(task.due.date))  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+            if task.due
+            else datetime.max.date(),
+        )
+
     new_schedule: dict[date, list[WeightedTask]] = defaultdict(list)
     reschedule_date = curr_date or datetime.now(tz=ZoneInfo(time_zone)).date()
     while len(weighted_tasks) != 0:
-        weight = get_weekday_weight(max_weight, reschedule_date)
+        weight = get_weekday_weight(
+            max_weight, reschedule_date, weighted_excluded_tasks
+        )
         next_batch = fill_my_sack(weight, weighted_tasks)
 
         new_schedule[reschedule_date].extend(next_batch)
@@ -175,8 +218,6 @@ async def reschedule(
     update_coroutines: list[Coroutine[Any, Any, Task]] = []
     for new_date, weighted_tasks in new_schedule.items():
         for task in weighted_tasks:
-            # (p and ((q and r) or (s and t)))
-            # (!p or ((!q or !r) and (!s or !t)))
             if not task.due or (
                 task.due.date == new_date  # pyright: ignore[reportUnknownMemberType]
                 and (

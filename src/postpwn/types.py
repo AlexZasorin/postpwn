@@ -10,10 +10,10 @@ class Rule(BaseModel):
         Field(description="Filter string for selecting tasks"),
     ]
     limit: int | None = Field(
-        None, gt=0, description="Optional limit for number of tasks"
+        None, ge=0, description="Optional limit for number of tasks"
     )
     weight: int | None = Field(
-        None, gt=0, description="Optional weight for task prioritization"
+        None, ge=0, description="Optional weight for task prioritization"
     )
 
 

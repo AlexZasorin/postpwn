@@ -32,6 +32,7 @@ async def test_schedule_registers_job_and_executes() -> None:
         time_zone="UTC",
         schedule=cron_schedule,
         curr_date=curr_date,
+        consider_all_labeled=False,
     )
 
     try:
