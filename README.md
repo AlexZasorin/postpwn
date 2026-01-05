@@ -118,6 +118,9 @@ capacity:
 
 ## TODO
 
+- [ ] Add docs for compare all labeled tasks
+- [ ] Consider extrapolating repeat tasks
+- [ ] Allow enabling debug logs
 - [ ] Catch improper cron string
 - [ ] Add tests
   - [ ] Timezone test, assert tasks are rescheduled in correct timezone
