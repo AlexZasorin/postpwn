@@ -91,14 +91,17 @@ def get_update_params(new_date: date, due: Due) -> UpdateTaskInput:
 
 
 def calculate_weight_modifier(date: date, excluded_tasks: list[WeightedTask]):
-    # All tasks for current date
-    current_date_excluded_tasks = [
-        task
-        for task in excluded_tasks
-        if task.due and task.due.date == date  # pyright: ignore[reportUnknownMemberType]
-    ]
+    modifier = sum(
+        (
+            task.weight
+            for task in excluded_tasks
+            if task.due and task.due.date == date  # pyright: ignore[reportUnknownMemberType]
+        )
+    )
 
-    return sum((task.weight for task in current_date_excluded_tasks))
+    logger.info("Weight modifier for %s: %d", date, modifier)
+
+    return modifier
 
 
 def get_weekday_weight(
