@@ -176,7 +176,7 @@ async def reschedule(
     weighted_tasks.sort(
         key=lambda task: datetime.fromisoformat(str(task.due.date))  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
         if task.due
-        else datetime.max.date(),
+        else datetime.max
     )
 
     weighted_excluded_tasks: list[WeightedTask] = []
@@ -196,7 +196,7 @@ async def reschedule(
         weighted_excluded_tasks.sort(
             key=lambda task: datetime.fromisoformat(str(task.due.date))  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
             if task.due
-            else datetime.max.date(),
+            else datetime.max
         )
 
     new_schedule: dict[date, list[WeightedTask]] = defaultdict(list)
