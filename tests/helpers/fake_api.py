@@ -15,7 +15,6 @@ type TaskDistribution = dict[str, int]
 async def create_task_generator(
     tasks: list[Task], filter: str
 ) -> AsyncGenerator[list[Task], None]:
-    logging.info(f"Filtering tasks with filter: {filter}")
     if filter == "":
         yield []
 

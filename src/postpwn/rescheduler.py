@@ -24,7 +24,6 @@ from postpwn.weighted_task import WeightedTask
 _ = load_dotenv()
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 def weighted_adapter(task: Task, rules: list[Rule] | None) -> WeightedTask | None:

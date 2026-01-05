@@ -26,7 +26,6 @@ from postpwn.validation import CRON_SCHEDULE_REGEX
 _ = load_dotenv()
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 class RescheduleParams(TypedDict):

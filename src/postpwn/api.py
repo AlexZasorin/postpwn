@@ -1,5 +1,4 @@
 from datetime import date, datetime
-import logging
 from typing import (
     Annotated,
     AsyncGenerator,
@@ -44,10 +43,6 @@ class UpdateTaskInput(TypedDict):
     duration_unit: NotRequired[Literal["minute", "day"]]
     deadline_date: NotRequired[date]
     deadline_lang: NotRequired[LanguageCode]
-
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 class TodoistAPIProtocol(Protocol):

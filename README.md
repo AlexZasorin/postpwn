@@ -123,6 +123,7 @@ capacity:
 - [ ] Allow enabling debug logs
 - [ ] Catch improper cron string
 - [ ] Add tests
+  - [ ] Sorting tasks with date or datetime
   - [ ] Timezone test, assert tasks are rescheduled in correct timezone
   - [ ] DST test, adding dates across DST change
   - [ ] Invalid input tests
