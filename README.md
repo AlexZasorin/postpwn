@@ -131,6 +131,8 @@ capacity:
     - bad filter
     - bad token
     - bad cron string
+- [ ] Make sure that system time does not affect scheduling
+  - Esssentially do a pass and make sure we're using only timezone-aware datetimes
 - [ ] Switch to pendulum
 - [ ] Switch to toml config???
   - [ ] Merge CLI args and rules config into a unified configuration
