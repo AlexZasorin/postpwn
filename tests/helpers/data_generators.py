@@ -1,4 +1,3 @@
-import logging
 import random
 from datetime import date, datetime
 from typing import Any, Optional
