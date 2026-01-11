@@ -41,5 +41,5 @@ typeCheckingMode = "strict"
 addopts = "--spec"
 spec_test_format = "{result} {docstring_summary}"
 log_cli = true
-log_cli_level = "INFO"
+log_format = "%(name)-20s [%(levelname)-5s]: %(message)s"
 asyncio_default_fixture_loop_scope = "function"

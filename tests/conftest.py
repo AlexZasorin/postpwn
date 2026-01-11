@@ -11,7 +11,8 @@ from postpwn.cli import RescheduleParams
 @pytest.fixture(autouse=True)
 def setup_logging():
     logging.basicConfig(
-        level=logging.DEBUG, format="%(name)s [%(levelname)s]: %(message)s"
+        level=logging.DEBUG,
+        format="%(asctime)-10s %(name)-20s [%(levelname)-5s]: %(message)s",
     )
 
 
