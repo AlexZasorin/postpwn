@@ -12,35 +12,38 @@ type TaskDistribution = dict[str, int]
 
 
 async def create_task_generator(
-    tasks: list[Task], filter: str
+    tasks: dict[str, list[Task]], filter: str
 ) -> AsyncGenerator[list[Task], None]:
     if filter == "":
         yield []
 
-    if filter == "standard-filter-goes-here":
-        yield tasks
-        return
-
-    filtered_tasks = [task for task in tasks if task.labels and filter in task.labels]
-    yield filtered_tasks
+    yield tasks[filter]
 
 
 class FakeTodoistAPI:
     def __init__(self, token: str, _: Session | None = None):
-        self.token: str = token
-        self.tasks: list[Task] = []
+        self._token: str = token
+        self._tasks_by_filter: dict[str, list[Task]] = defaultdict(list)
+        self._all_tasks: list[Task] = []
+        self._all_task_ids: set[str] = set()
+
         self.update_task = AsyncMock(
             return_value=build_task({"id": "mock_id", "content": "Updated Task"})
         )
         self.filter_tasks = AsyncMock(
             side_effect=lambda **kwargs: create_task_generator(  # pyright: ignore[reportUnknownLambdaType]
-                self.tasks,
+                self._tasks_by_filter,
                 kwargs["query"],  # pyright: ignore[reportUnknownArgumentType]
             )
         )
 
-    def setup_tasks(self, tasks: list[Task]) -> None:
-        self.tasks.extend(tasks)
+    def setup_tasks(self, filter: str, tasks: list[Task]) -> None:
+        self._tasks_by_filter[filter] = tasks
+
+        for task in tasks:
+            if task.id not in self._all_task_ids:
+                self._all_task_ids.add(task.id)
+                self._all_tasks.append(task)
 
     def task_distribution(
         self,
@@ -57,7 +60,7 @@ class FakeTodoistAPI:
                 else datetime.combine(call.kwargs["due_date"], datetime.min.time())
             )
 
-            matching_task = next(t for t in self.tasks if t.id == task_id)
+            matching_task = next(t for t in self._all_tasks if t.id == task_id)
             task_label = (
                 next(label for label in matching_task.labels)
                 if matching_task.labels

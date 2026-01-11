@@ -80,7 +80,7 @@ def test_no_rules_provided(
     """when no rules are provided, it reschedules all tasks to the current day"""
 
     task = build_task()
-    fake_api.setup_tasks([task])
+    fake_api.setup_tasks(filter="view all", tasks=[task])
 
     curr_date = datetime(2025, 1, 5, 0, 0, 0).date()
 
@@ -97,7 +97,7 @@ def test_datetime_is_preserved(
     """when a task has a datetime due date, the specific time is preserved"""
 
     task = build_task(is_datetime=True)
-    fake_api.setup_tasks([task])
+    fake_api.setup_tasks(filter="view all", tasks=[task])
 
     curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
 
@@ -118,7 +118,7 @@ def test_weight_exceeds_single_max_weight(
     unlabeled_task = build_task()
     labeled_task = build_task({"labels": ["weight_one"]})
 
-    fake_api.setup_tasks([unlabeled_task, labeled_task])
+    fake_api.setup_tasks(filter="view all", tasks=[unlabeled_task, labeled_task])
 
     curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
 
@@ -140,7 +140,7 @@ def test_weight_exceeds_daily_max_weight(
     unlabeled_task = build_task()
     labeled_task = build_task({"labels": ["weight_one"]})
 
-    fake_api.setup_tasks([unlabeled_task, labeled_task])
+    fake_api.setup_tasks(filter="view all", tasks=[unlabeled_task, labeled_task])
 
     curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
 
@@ -162,7 +162,7 @@ def test_no_matching_label(
     unlabeled_task = build_task()
     labeled_task = build_task({"labels": ["weight_one"]})
 
-    fake_api.setup_tasks([unlabeled_task, labeled_task])
+    fake_api.setup_tasks(filter="view all", tasks=[unlabeled_task, labeled_task])
 
     curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
 
@@ -185,7 +185,7 @@ def test_reschedule_with_rules(
         *[build_task({"labels": ["weight_two"]}, is_datetime=True) for _ in range(2)],
     ]
 
-    fake_api.setup_tasks(tasks)
+    fake_api.setup_tasks(filter="view all", tasks=tasks)
 
     curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
 
@@ -229,7 +229,7 @@ def test_reschedule_with_priority(
         high_priority_task,
     ]
 
-    fake_api.setup_tasks(tasks)
+    fake_api.setup_tasks(filter="view all", tasks=tasks)
 
     curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
 
@@ -277,7 +277,7 @@ def test_reschedule_with_rules_and_daily_weight(
         *[build_task({"labels": ["weight_two"]}) for _ in range(2)],
     ]
 
-    fake_api.setup_tasks(tasks)
+    fake_api.setup_tasks(filter="view all", tasks=tasks)
 
     curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
 
@@ -327,7 +327,7 @@ def test_dry_run_doesn_not_update_tasks(
     params["dry_run"] = True
 
     task = build_task()
-    fake_api.setup_tasks([task])
+    fake_api.setup_tasks(filter="view all", tasks=[task])
 
     curr_datetime = datetime(2025, 1, 5, 12, 0, 0)
 
@@ -347,7 +347,9 @@ def test_overlapping_labels_uses_first_match(
     task_weight_one_first = build_task({"labels": ["weight_two", "weight_one"]})
     task_weight_two_first = build_task({"labels": ["weight_two"]})
 
-    fake_api.setup_tasks([task_weight_one_first, task_weight_two_first])
+    fake_api.setup_tasks(
+        filter="view all", tasks=[task_weight_one_first, task_weight_two_first]
+    )
 
     curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
 
@@ -392,7 +394,8 @@ def test_consider_all_labeled_tasks_flag(
     ]
     non_matching_task = build_task({"labels": ["weight_two"]})
 
-    fake_api.setup_tasks([*matching_tasks, non_matching_task])
+    fake_api.setup_tasks(filter="weight_one", tasks=[*matching_tasks])
+    fake_api.setup_tasks(filter="!(weight_one)", tasks=[non_matching_task])
 
     curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
 

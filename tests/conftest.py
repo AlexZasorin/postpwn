@@ -26,7 +26,7 @@ def loop() -> Generator[AbstractEventLoop, None, None]:
 def params() -> RescheduleParams:
     return {
         "token": "VALID_TOKEN",
-        "filter": "standard-filter-goes-here",
+        "filter": "view all",
         "rules": None,
         "dry_run": False,
         "time_zone": "UTC",

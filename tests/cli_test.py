@@ -17,7 +17,7 @@ async def test_schedule_registers_job_and_executes() -> None:
 
     fake_api = FakeTodoistAPI("VALID_TOKEN")
     task = build_task()
-    fake_api.setup_tasks([task])
+    fake_api.setup_tasks(filter="standard-filter-goes-here", tasks=[task])
 
     curr_date = datetime(2025, 1, 5, 0, 0, 0).date()
     cron_schedule = "0 0 * * *"  # Midnight daily
