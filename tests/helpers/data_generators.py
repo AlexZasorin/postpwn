@@ -6,10 +6,11 @@ from dataclass_wizard import DatePattern, DateTimePattern
 from faker import Faker
 from todoist_api_python.models import Deadline, Due, Duration, Task
 
+_faker = Faker()
+
 
 def generate_id() -> str:
-    fake = Faker()
-    return fake.uuid4()
+    return _faker.uuid4()
 
 
 def generate_int(min_val: int = 1, max_val: int = 100) -> int:
@@ -21,34 +22,26 @@ def generate_bool() -> bool:
 
 
 def generate_text(words: int = 10, ext_word_list: list[str] | None = None) -> str:
-    fake = Faker()
-
-    generated_words = fake.words(words, ext_word_list=ext_word_list)
-
+    generated_words = _faker.words(words, ext_word_list=ext_word_list)
     return " ".join(generated_words)
 
 
 def generate_datetime(before_now: bool = True, after_now: bool = False) -> datetime:
-    fake = Faker()
-    return fake.date_time_this_month(
+    return _faker.date_time_this_month(
         before_now=before_now, after_now=after_now
     ).replace(hour=0, minute=0, second=0, microsecond=0)
 
 
 def generate_date(before_today: bool = True, after_today: bool = False) -> date:
-    fake = Faker()
-    fake.date
-    return fake.date_this_month(before_today=before_today, after_today=after_today)
+    return _faker.date_this_month(before_today=before_today, after_today=after_today)
 
 
 def generate_timezone() -> str:
-    fake = Faker()
-    return fake.timezone()
+    return _faker.timezone()
 
 
 def generate_url() -> str:
-    fake = Faker()
-    return fake.url()
+    return _faker.url()
 
 
 def build_due(

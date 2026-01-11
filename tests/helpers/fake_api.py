@@ -19,8 +19,8 @@ async def create_task_generator(
 
     if filter == "":
         yield []
-
-    yield tasks[filter]
+    else:
+        yield tasks[filter]
 
 
 class FakeTodoistAPI:
@@ -63,7 +63,10 @@ class FakeTodoistAPI:
                 else datetime.combine(call.kwargs["due_date"], datetime.min.time())
             )
 
-            matching_task = next(t for t in self._all_tasks if t.id == task_id)
+            matching_task = next((t for t in self._all_tasks if t.id == task_id), None)
+            if not matching_task:
+                continue
+
             task_label = (
                 next(label for label in matching_task.labels)
                 if matching_task.labels

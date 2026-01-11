@@ -4,6 +4,7 @@ import os
 import re
 from asyncio import AbstractEventLoop
 from datetime import date, datetime
+from functools import partial
 from typing import TypedDict, Unpack
 from zoneinfo import ZoneInfo
 
@@ -52,20 +53,20 @@ async def run_schedule(
     logger.info(f"Running on schedule: {schedule}")
     scheduler = AsyncIOScheduler()
 
-    async def reschedule_job():
-        await reschedule(
-            api=api,
-            max_weight=max_weight,
-            curr_date=curr_date,
-            time_zone=time_zone,
-            rules=rules,
-            filter=filter,
-            dry_run=dry_run,
-            consider_all_labeled=consider_all_labeled,
-        )
+    reschedule_task = partial(
+        reschedule,
+        api=api,
+        max_weight=max_weight,
+        curr_date=curr_date,
+        time_zone=time_zone,
+        rules=rules,
+        filter=filter,
+        dry_run=dry_run,
+        consider_all_labeled=consider_all_labeled,
+    )
 
     _ = scheduler.add_job(  # pyright: ignore[reportUnknownMemberType]
-        reschedule_job,
+        reschedule_task,
         CronTrigger.from_crontab(  # pyright: ignore[reportUnknownMemberType]
             schedule, timezone=ZoneInfo(time_zone)
         ),
