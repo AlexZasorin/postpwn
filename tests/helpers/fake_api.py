@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import AsyncGenerator
 from unittest.mock import AsyncMock
 
-from requests import Session
+from requests import HTTPError, Session
 from todoist_api_python.models import Task
 
 from helpers.data_generators import build_task
@@ -12,8 +12,11 @@ type TaskDistribution = dict[str, int]
 
 
 async def create_task_generator(
-    tasks: dict[str, list[Task]], filter: str
+    tasks: dict[str, list[Task]], filter: str, token: str
 ) -> AsyncGenerator[list[Task], None]:
+    if token != "VALID_TOKEN":
+        raise HTTPError("401 Client Error: Unauthorized for url: idk")
+
     if filter == "":
         yield []
 
@@ -22,7 +25,6 @@ async def create_task_generator(
 
 class FakeTodoistAPI:
     def __init__(self, token: str, _: Session | None = None):
-        self._token: str = token
         self._tasks_by_filter: dict[str, list[Task]] = defaultdict(list)
         self._all_tasks: list[Task] = []
         self._all_task_ids: set[str] = set()
@@ -34,6 +36,7 @@ class FakeTodoistAPI:
             side_effect=lambda **kwargs: create_task_generator(  # pyright: ignore[reportUnknownLambdaType]
                 self._tasks_by_filter,
                 kwargs["query"],  # pyright: ignore[reportUnknownArgumentType]
+                token,
             )
         )
 
