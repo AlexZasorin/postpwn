@@ -211,6 +211,42 @@ def test_reschedule_with_rules(
     assert scheduled_dates[third_day]["weight_two"] == 1
 
 
+def test_missing_due_date(
+    loop: AbstractEventLoop, params: RescheduleParams, fake_api: FakeTodoistAPI
+) -> None:
+    """when some tasks are missing a due date, they are handled gracefully"""
+
+    params["filter"] = "datetime tasks"
+    params["rules"] = "tests/fixtures/single_max_weight_rules.json"
+
+    tasks = [
+        build_task({"labels": ["weight_one"]}),
+        build_task({"labels": ["weight_one"]}, omit_due=True),
+    ]
+
+    excluded_tasks = [
+        build_task({"labels": ["weight_one"]}),
+        build_task({"labels": ["weight_one"]}, omit_due=True),
+    ]
+
+    fake_api.setup_tasks(filter="datetime tasks", tasks=tasks)
+    fake_api.setup_tasks(filter="!(datetime tasks)", tasks=excluded_tasks)
+
+    curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
+
+    with set_env({"RETRY_ATTEMPTS": "1"}):
+        postpwn(fake_api, loop, curr_datetime, **params)
+
+    assert fake_api.update_task.call_count == 1
+
+    # Get distribution of scheduled tasks
+    scheduled_dates = fake_api.task_distribution()
+
+    # Current day (Jan 5)
+    assert curr_datetime in scheduled_dates
+    assert scheduled_dates[curr_datetime]["weight_one"] == 1
+
+
 def test_reschedule_with_priority(
     loop: AbstractEventLoop, params: RescheduleParams, fake_api: FakeTodoistAPI
 ) -> None:

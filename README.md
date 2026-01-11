@@ -119,11 +119,10 @@ capacity:
 ## TODO
 
 - [ ] Add docs for compare all labeled tasks
-- [ ] Consider extrapolating repeat tasks
 - [ ] Allow enabling debug logs
 - [ ] Catch improper cron string
 - [ ] Add tests
-  - [ ] Sorting tasks with date or datetime
+  - [x] Sorting tasks with date or datetime
   - [ ] Timezone test, assert tasks are rescheduled in correct timezone
   - [ ] DST test, adding dates across DST change
   - [ ] Invalid input tests
@@ -137,7 +136,6 @@ capacity:
 - [ ] Switch to toml config???
   - [ ] Merge CLI args and rules config into a unified configuration
 - [ ] Allow disabling "smart" rescheduling
-- [ ] Allow considering of tasks with matching label, but not matching filter
 - [ ] Allow "punting" of tasks further than today
 - [ ] Add limits as alternative to weights
 - [ ] Allow overriding the default values for each priority
@@ -146,6 +144,7 @@ optional
 - [ ] Add semantic release
 - [ ] Publish executable using PyOxidizer
 - [ ] Use Session from requests to implement retry logic?
+- [.] Consider extrapolating repeat tasks
 
 ## License
 

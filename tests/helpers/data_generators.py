@@ -1,3 +1,4 @@
+import logging
 import random
 from datetime import date, datetime
 from typing import Any, Optional
@@ -115,7 +116,9 @@ def build_deadline(properties: Optional[dict[str, Any]] = None) -> Deadline:
 
 
 def build_task(
-    properties: Optional[dict[str, Any]] = None, is_datetime: bool = False
+    properties: Optional[dict[str, Any]] = None,
+    is_datetime: bool = False,
+    omit_due: bool = False,
 ) -> Task:
     defaults = Task(
         id=generate_id(),
@@ -126,7 +129,7 @@ def build_task(
         parent_id=generate_id(),
         labels=[generate_text(words=1) for _ in range(3)],
         priority=1,
-        due=build_due(is_datetime=is_datetime),
+        due=build_due(is_datetime=is_datetime) if not omit_due else None,
         deadline=build_deadline(),
         duration=build_duration(),
         is_collapsed=generate_bool(),
