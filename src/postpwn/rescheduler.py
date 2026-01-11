@@ -15,7 +15,7 @@ from tenacity import (
     stop_after_attempt,
     wait_exponential_jitter,
 )
-from todoist_api_python.models import Due, Task
+from todoist_api_python.models import ApiDue, Due, Task
 
 from postpwn.api import TodoistAPIProtocol, UpdateTaskInput
 from postpwn.types import Rule, WeightConfig
@@ -64,7 +64,7 @@ def fill_my_sack(
         f"fill_my_sack: starting knapsack with max_weight={max_weight}, {len(tasks)} tasks"
     )
 
-    values = [0 for _ in range(max_weight + 1)]
+    values = [0] * (max_weight + 1)
     selected: list[list[WeightedTask]] = [[] for _ in range(max_weight + 1)]
 
     for task in tasks:
@@ -107,13 +107,11 @@ def get_update_params(new_date: date, due: Due) -> UpdateTaskInput:
     update_params: UpdateTaskInput = {}
 
     if isinstance(due.date, datetime):  # pyright: ignore[reportUnknownMemberType]
-        time = datetime.strptime(str(due.date), "%Y-%m-%d %H:%M:%S").time()  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
-        new_datetime = datetime.strptime(f"{new_date} {time}", "%Y-%m-%d %H:%M:%S")
-        update_params["due_datetime"] = new_datetime
+        time = due.date.time()  # pyright: ignore[reportUnknownMemberType]
+        update_params["due_datetime"] = datetime.combine(new_date, time)
         logger.debug(f"get_update_params: datetime task, preserving time={time}")
     else:
-        new_datetime = datetime.strptime(str(new_date), "%Y-%m-%d")
-        update_params["due_date"] = new_datetime.date()
+        update_params["due_date"] = new_date
         logger.debug("get_update_params: date-only task")
 
     if due.string:
@@ -137,7 +135,7 @@ def calculate_weight_modifier(date: date, excluded_tasks: list[WeightedTask]):
 
     for task in excluded_tasks:
         if task.due:
-            logger.debug(f"excluded task {task.id} due date={task.due.date}")  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+            logger.debug(f"excluded task {task.id} due date={task.due.date}")  # pyright: ignore[reportUnknownMemberType]
 
     logger.debug(f"{len(matching_tasks)} matching tasks found for date={midnight_date}")
 
@@ -222,6 +220,13 @@ def build_retry(func: WrappedFn) -> WrappedFn:
     )(func)
 
 
+def is_already_scheduled(due_date: ApiDue, target_date: date) -> bool:  # pyright: ignore[reportUnknownParameterType]
+    """Check if task is already scheduled on the target date."""
+    if isinstance(due_date, datetime):
+        return due_date.date() == target_date
+    return due_date == target_date
+
+
 async def reschedule(
     api: TodoistAPIProtocol,
     filter: str,
@@ -288,7 +293,7 @@ async def reschedule(
     logger.debug(f"reschedule: starting date for rescheduling: {reschedule_date}")
 
     iteration = 0
-    while len(weighted_tasks) != 0:
+    while weighted_tasks:
         iteration += 1
         logger.debug(
             f"reschedule: iteration {iteration} - {len(weighted_tasks)} tasks remaining, processing date {reschedule_date}"
@@ -304,7 +309,10 @@ async def reschedule(
         )
 
         new_schedule[reschedule_date].extend(next_batch)
-        weighted_tasks = [task for task in weighted_tasks if task not in next_batch]
+        next_batch_ids = {task.id for task in next_batch}
+        weighted_tasks = [
+            task for task in weighted_tasks if task.id not in next_batch_ids
+        ]
 
         reschedule_date += timedelta(days=1)
 
@@ -314,13 +322,7 @@ async def reschedule(
 
     for new_date, weighted_tasks in new_schedule.items():
         for task in weighted_tasks:
-            if not task.due or (
-                task.due.date == new_date  # pyright: ignore[reportUnknownMemberType]
-                and (
-                    not isinstance(task.due.date, datetime)  # pyright: ignore[reportUnknownMemberType]
-                    or task.due.date.date() == new_date  # pyright: ignore[reportUnknownMemberType]
-                )
-            ):
+            if not task.due or is_already_scheduled(task.due.date, new_date):  # pyright: ignore[reportUnknownMemberType]
                 logger.debug(
                     f"reschedule: task '{task.content}' already scheduled for {new_date}, skipping"
                 )

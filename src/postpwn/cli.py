@@ -102,8 +102,8 @@ async def run_schedule(
 )
 @click.option(
     "--token",
-    help="Todoist API key. Fetched from TODOIST_",
-    default=os.getenv("TODOIST_USER_TOKEN"),
+    help="Todoist API key.",
+    envvar="TODOIST_USER_TOKEN",
     type=str,
 )
 @click.option(
