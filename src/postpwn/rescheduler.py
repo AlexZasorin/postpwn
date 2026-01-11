@@ -91,15 +91,31 @@ def get_update_params(new_date: date, due: Due) -> UpdateTaskInput:
 
 
 def calculate_weight_modifier(date: date, excluded_tasks: list[WeightedTask]):
-    modifier = sum(
-        (
-            task.weight
-            for task in excluded_tasks
-            if task.due and task.due.date == date  # pyright: ignore[reportUnknownMemberType]
-        )
+    midnight_date = datetime.combine(date, datetime.min.time())
+    logger.debug(
+        f"calculate_weight_modifier: calculating for date={midnight_date} with {len(excluded_tasks)} excluded tasks"
     )
 
-    logger.info("Weight modifier for %s: %d", date, modifier)
+    matching_tasks = [
+        task
+        for task in excluded_tasks
+        if task.due and task.due.date == midnight_date  # pyright: ignore[reportUnknownMemberType]
+    ]
+
+    for task in excluded_tasks:
+        if task.due:
+            logger.debug(f"excluded task {task.id} due date={task.due.date}")  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
+
+    logger.debug(f"{len(matching_tasks)} matching tasks found for date={midnight_date}")
+
+    modifier = sum(task.weight for task in matching_tasks)
+
+    if matching_tasks:
+        logger.debug(
+            f"calculate_weight_modifier: found {len(matching_tasks)} matching tasks: {[f'{t.content}(w={t.weight})' for t in matching_tasks]}"
+        )
+
+    logger.debug(f"weight modifier for {midnight_date}: {modifier}")
 
     return modifier
 

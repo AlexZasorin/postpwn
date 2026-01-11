@@ -379,6 +379,7 @@ def test_consider_all_labeled_tasks_flag(
 
     # Overrides filter to only match weight_one tasks
     params["filter"] = "weight_one"
+    params["consider_all_labeled"] = True
 
     curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
 
@@ -387,12 +388,16 @@ def test_consider_all_labeled_tasks_flag(
         build_task(
             {
                 "labels": ["weight_one"],
-                "due": build_due({"date": curr_datetime}, is_datetime=True),
             }
         )
         for _ in range(2)
     ]
-    non_matching_task = build_task({"labels": ["weight_two"]})
+    non_matching_task = build_task(
+        {
+            "labels": ["weight_two"],
+            "due": build_due({"date": curr_datetime + timedelta(days=2)}),
+        }
+    )
 
     fake_api.setup_tasks(filter="weight_one", tasks=[*matching_tasks])
     fake_api.setup_tasks(filter="!(weight_one)", tasks=[non_matching_task])
@@ -407,23 +412,27 @@ def test_consider_all_labeled_tasks_flag(
 
     scheduled_dates = fake_api.task_distribution()
 
-    # Current day (Jan 5)
+    # Current day, Sunday (Jan 5)
     # Results should reflect that weight_two task was NOT rescheduled
     assert curr_datetime not in scheduled_dates
     assert scheduled_dates[curr_datetime]["weight_one"] == 0
     assert scheduled_dates[curr_datetime]["weight_two"] == 0
 
-    # Next day (Jan 6)
+    # Monday (Jan 6)
     second_day = curr_datetime + timedelta(days=1)
     assert second_day in scheduled_dates
     assert scheduled_dates[second_day]["weight_one"] == 1
     assert scheduled_dates[second_day]["weight_two"] == 0
 
-    # Day after next (Jan 7)
+    # Tuesday (Jan 7)
     third_day = curr_datetime + timedelta(days=2)
-    assert third_day in scheduled_dates
-    assert scheduled_dates[third_day]["weight_one"] == 1
-    assert scheduled_dates[third_day]["weight_two"] == 0
+    assert third_day not in scheduled_dates
+
+    # Wednesday (Jan 8)
+    fourth_day = curr_datetime + timedelta(days=3)
+    assert fourth_day in scheduled_dates
+    assert scheduled_dates[fourth_day]["weight_one"] == 1
+    assert scheduled_dates[fourth_day]["weight_two"] == 0
 
 
 @pytest.mark.asyncio
