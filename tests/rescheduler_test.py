@@ -1,6 +1,6 @@
 import logging
 from asyncio import AbstractEventLoop
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from unittest.mock import AsyncMock
 
 import pytest
@@ -414,6 +414,7 @@ def test_consider_all_labeled_tasks_flag(
     params["consider_all_labeled"] = True
 
     curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
+    curr_date = date(2025, 1, 5)
 
     # Two tasks that match the filter
     matching_tasks = [
@@ -424,15 +425,23 @@ def test_consider_all_labeled_tasks_flag(
         )
         for _ in range(2)
     ]
-    non_matching_task = build_task(
-        {
-            "labels": ["weight_two"],
-            "due": build_due({"date": curr_datetime + timedelta(days=2)}),
-        }
-    )
+    non_matching_tasks = [
+        build_task(
+            {
+                "labels": ["weight_two"],
+                "due": build_due({"date": curr_datetime + timedelta(days=2)}),
+            }
+        ),
+        build_task(
+            {
+                "labels": ["weight_two"],
+                "due": build_due({"date": curr_date + timedelta(days=3)}),
+            }
+        ),
+    ]
 
     fake_api.setup_tasks(filter="weight_one", tasks=[*matching_tasks])
-    fake_api.setup_tasks(filter="!(weight_one)", tasks=[non_matching_task])
+    fake_api.setup_tasks(filter="!(weight_one)", tasks=[*non_matching_tasks])
 
     curr_datetime = datetime(2025, 1, 5, 0, 0, 0)
 
@@ -462,9 +471,13 @@ def test_consider_all_labeled_tasks_flag(
 
     # Wednesday (Jan 8)
     fourth_day = curr_datetime + timedelta(days=3)
-    assert fourth_day in scheduled_dates
-    assert scheduled_dates[fourth_day]["weight_one"] == 1
-    assert scheduled_dates[fourth_day]["weight_two"] == 0
+    assert fourth_day not in scheduled_dates
+
+    # Thursday (Jan 9)
+    fifth_day = curr_datetime + timedelta(days=4)
+    assert fifth_day in scheduled_dates
+    assert scheduled_dates[fifth_day]["weight_one"] == 1
+    assert scheduled_dates[fifth_day]["weight_two"] == 0
 
 
 @pytest.mark.asyncio
