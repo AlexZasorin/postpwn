@@ -121,8 +121,13 @@ capacity:
 - [ ] Add docs for compare all labeled tasks
 - [ ] Allow enabling debug logs
 - [ ] Catch improper cron string
+- [ ] Refactor how we test for tasks being rescheduled to the correct day
+- [ ] Always scheduled sub tasks before the main task
+- [ ] Factor in deadlines
 - [ ] Add tests
   - [x] Sorting tasks with date or datetime
+  - [ ] Assert tasks are rescheduled such that tasks originally scheduled
+  earlier are prioritized, assuming all else (labels, priority) are equal
   - [ ] Timezone test, assert tasks are rescheduled in correct timezone
   - [ ] DST test, adding dates across DST change
   - [ ] Invalid input tests
